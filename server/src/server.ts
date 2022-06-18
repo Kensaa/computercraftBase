@@ -3,7 +3,7 @@ import * as express from 'express'
 import * as cors from 'cors'
 import * as path from 'path'
 import { Request,Response } from 'express'
-import {Client,WSMessage,RegisterPayload,EnergyRatePayload,TypedRequest} from './types'
+import {Client,WSMessage,RegisterPayload,EnergyRatePayload,EnergyStoragePayload,EnergyRate,EnergyStorage} from './types'
 import * as sql from './sql'
 
 const SOCKETPORT = 3694;
@@ -46,13 +46,26 @@ const WEBSERVERPORT = SOCKETPORT+1;
                 clients.push(client)
                 console.log(`registered client with name "${client.name}" and type "${client.type}"`)
             }else if (message.event==='energyRate'){
-                const {rate} = message.payload as EnergyRatePayload
+                const payload = message.payload as EnergyRatePayload
                 const client = clients.find(e=>e.ws===ws)
                 if(client){
-                    const {name} = client
-                    const time = new Date().getTime()
-                    
-                    sql.addEnergyRead(database,{rate,time:time+"",source:name,type:'rate'})
+                    const energyRate:EnergyRate = {
+                        time:new Date().getTime().toString(),
+                        ...payload,
+                        source:client.name
+                    }
+                    sql.addEnergyRate(database,energyRate)
+                }
+            }else if(message.event==='energyStorage'){
+                const payload = message.payload as EnergyStoragePayload
+                const client = clients.find(e=>e.ws===ws)
+                if(client){
+                    const energyStorage:EnergyStorage = {
+                        time:new Date().getTime().toString(),
+                        ...(payload),
+                        source:client.name
+                    }
+                    sql.addEnergyStorage(database,energyStorage)
                 }
             }
         })
@@ -84,21 +97,40 @@ const WEBSERVERPORT = SOCKETPORT+1;
         }
     })
 
-    expressServer.get('/api/energyLoggers', async (req:Request,res:Response)=>{
-        const loggers = clients.filter(e=>e.type==='energyLogger').map(e=>e.name)
+    expressServer.get('/api/energy/rate', async (req:Request,res:Response)=>{
+        const loggers = clients.filter(e=>e.type==='energyRateLogger').map(e=>e.name)
         res.send(loggers);
     })
 
-    expressServer.get('/api/energyReads/:name/:count', async (req:Request,res:Response)=>{
+    expressServer.get('/api/energy/rate/:name/:count', async (req:Request,res:Response)=>{
         const name = req.params.name
-        if(name === undefined || clients.find(e=>e.name===name && e.type==='energyLogger')===undefined){
-            res.status(404).send('logger not found')
-            return
-        } 
+
         var count = parseInt(req.params.count)
-        if(count === undefined || isNaN(count) || count<1)count = 100
-        const energyReads = (await sql.getEnergyReads(database)).filter(e=>e.source===name).sort((a,b)=>parseInt(a.time)-parseInt(b.time))
-        res.send(energyReads.slice(0,count))
+        if(isNaN(count) || count<1)count = 100
+        const rates = await sql.getEnergyRatesBySource(database,name,count)
+        if(rates.length === 0){
+            res.sendStatus(404)
+            return
+        }
+        res.send(rates)
+    })
+
+    expressServer.get('/api/energy/storage', async (req:Request,res:Response)=>{
+        const loggers = clients.filter(e=>e.type==='energyStorageLogger').map(e=>e.name)
+        res.send(loggers);
+    })
+
+    expressServer.get('/api/energy/storage/:name/:count', async (req:Request,res:Response)=>{
+        const name = req.params.name
+
+        var count = parseInt(req.params.count)
+        if(isNaN(count) || count<1)count = 100
+        const rates = await sql.getEnergyStoragesBySource(database,name,count)
+        if(rates.length === 0){
+            res.sendStatus(404)
+            return
+        }
+        res.send(rates)
     })
 
     expressServer.use(express.static('public'))

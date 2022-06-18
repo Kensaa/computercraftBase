@@ -20,10 +20,16 @@ export interface RegisterPayload{
     name:string,
 }
 export interface EnergyRatePayload{
-    rate:number,
+    inputRate:number,
+    outputRate:number,
 }
 
-export type ClientType = 'door' | 'energyLogger';
+export interface EnergyStoragePayload{
+    storage:number,
+    maxStorage:number,
+}
+
+export type ClientType = 'door' | 'energyRateLogger' | 'energyStorageLogger';
 
 
 //----------------------------------------------------------------------\\
@@ -35,14 +41,21 @@ export interface TypedRequest<T> extends Request {
 
 //----------------------------------------------------------------------\\
 //----------------------------DATABASE----------------------------------\\
-export interface EnergyRead{
+export interface EnergyRate{
     id?:number,
     time:string,
-    rate:number,
+    inputRate:number,
+    outputRate:number,
     source:string,
-    type:EnergyReadType,
 }
 
-export type EnergyReadType = 'rate' | 'storage';
+export interface EnergyStorage{
+    id?:number,
+    time:string,
+    storage:number,
+    maxStorage:number,
+    source:string,
+
+}
 
 

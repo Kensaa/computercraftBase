@@ -1,4 +1,8 @@
-local energy = peripheral.wrap('bottom')
+local inputID = '3'
+local outputID = '4'
+
+local input = peripheral.wrap('energyDetector_'..inputID)
+local output = peripheral.wrap('energyDetector_'..outputID)
 
 local url = "ws://home.kensa.fr:3694"
 local ws, err = http.websocket(url)
@@ -7,13 +11,15 @@ if not err == nil then
     return
 end
 
-local clientType = "energyLogger"
-local clientName = "Energie Input"
+local clientType = "energyRateLogger"
+local clientName = "Energie Base"
 
 ws.send('{"event":"register","payload":{"type":"'..clientType..'","name":"'..clientName..'"}}')
 
 while true do
-    local transferRate = energy.getTransferRate()
-    ws.send('{"event":"energyRate","payload":{"rate":'..transferRate..'}}')
+    local inputRate = input.getTransferRate()
+    local outputRate = output.getTransferRate()
+
+    ws.send('{"event":"energyRate","payload":{"inputRate":'..inputRate..',"outputRate":'..outputRate..'}}')
     sleep(1)
 end

@@ -1,4 +1,4 @@
-import {EnergyRead,EnergyReadType} from './types'
+import {EnergyRate,EnergyStorage} from './types'
 import { Database } from 'sqlite3'
 import { promisify } from 'util'
 
@@ -24,64 +24,154 @@ export async function loadDatabase(
     db.getAsync = promisify(db.get)
     db.allAsync = promisify(db.all)
 
-    await db.runAsync(`CREATE TABLE IF NOT EXISTS EnergyReads (
+    await db.runAsync(`CREATE TABLE IF NOT EXISTS EnergyRate (
         id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL UNIQUE,
         time TEXT NOT NULL,
-        rate INTEGER NOT NULL,
-        source TEXT NOT NULL,
-        type TEXT NOT NULL
+        inputRate INTEGER NOT NULL,
+        outputRate INTEGER NOT NULL,
+        source TEXT NOT NULL
+    );`)
+
+    await db.runAsync(`CREATE TABLE IF NOT EXISTS EnergyStorage (
+        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL UNIQUE,
+        time TEXT NOT NULL,
+        storage INTEGER NOT NULL,
+        maxStorage INTEGER NOT NULL,
+        source TEXT NOT NULL
     );`)
     
     return db
 }
 
-// EnergyRead --------------------------------------------------------------------------------------------------
+// EnergyRate --------------------------------------------------------------------------------------------------
 
-export async function getEnergyRead(
+export async function getEnergyRate(
     db: AsyncDatabase,
-    id: EnergyRead['id']
-): Promise<EnergyRead> {
-    const result = await db.getAsync(`SELECT * FROM EnergyReads WHERE id = ?`, id) as EnergyRead
+    id: EnergyRate['id']
+): Promise<EnergyRate> {
+    const result = await db.getAsync(`SELECT * FROM EnergyRate WHERE id = ?`, id) as EnergyRate
     return result
 }
 
-export async function getEnergyReads(
-    db: AsyncDatabase
-): Promise<EnergyRead[]> {
-    const result = await db.allAsync(`SELECT * FROM EnergyReads`) as EnergyRead[]
+export async function getEnergyRates(
+    db: AsyncDatabase,
+    count?:number
+): Promise<EnergyRate[]> {
+    const result = await db.allAsync(`SELECT * FROM EnergyRate`) as EnergyRate[]
     return result
 }
 
-export async function energyReadExists(
+export async function getEnergyRatesBySource(
     db: AsyncDatabase,
-    id: EnergyRead['id']
+    source: EnergyRate['source'],
+    count?: number
+): Promise<EnergyRate[]> {
+    let result;
+    if(count){
+        result = await db.allAsync(`SELECT * FROM EnergyRate WHERE source = ? ORDER BY Time DESC LIMIT ? `,source,count) as EnergyRate[]
+    }else{
+        result = await db.allAsync(`SELECT * FROM EnergyRate WHERE source = ? ORDER BY Time DESC`,source) as EnergyRate[]
+    }
+    return result
+}
+
+export async function energyRateExists(
+    db: AsyncDatabase,
+    id: EnergyRate['id']
 ): Promise<boolean> {
-    const result = await db.getAsync(`SELECT * FROM EnergyReads WHERE id = ?`, id)
+    const result = await db.getAsync(`SELECT * FROM EnergyRate WHERE id = ?`, id)
     return result !== undefined
 }
 
-export async function addEnergyRead(
+export async function addEnergyRate(
     db: AsyncDatabase,
-    energyRead: EnergyRead
+    energyRead: EnergyRate
 ): Promise<void> {
-    await db.runAsync(`INSERT INTO EnergyReads (time, rate, source, type) VALUES (?,?,?,?)`,
+    await db.runAsync(`INSERT INTO EnergyRate (time, inputRate,outputRate, source) VALUES (?,?,?,?)`,
         energyRead.time,
-        energyRead.rate,
-        energyRead.source,
-        energyRead.type
+        energyRead.inputRate,
+        energyRead.outputRate,
+        energyRead.source
     )
 }
 
-export async function editEnergyRead(
+export async function editEnergyRate(
     db: AsyncDatabase,
-    newEnergyRead: EnergyRead
+    newEnergyRead: EnergyRate
 ) : Promise<void> {
-    const query = 'UPDATE EnergyReads SET time=?, rate=?, source=?, type=? WHERE id=?'
+    const query = 'UPDATE EnergyRate SET time=?, inputRate=?, outputRate=?, source=? WHERE id=?'
     await db.runAsync(query,
         newEnergyRead.time,
-        newEnergyRead.rate,
+        newEnergyRead.inputRate,
+        newEnergyRead.outputRate,
         newEnergyRead.source,
-        newEnergyRead.type,
+        newEnergyRead.id
+    )
+}
+
+
+// EnergyStorage --------------------------------------------------------------------------------------------------
+
+export async function getEnergyStorage(
+    db: AsyncDatabase,
+    id: EnergyStorage['id']
+): Promise<EnergyStorage> {
+    const result = await db.getAsync(`SELECT * FROM EnergyStorage WHERE id = ?`, id) as EnergyStorage
+    return result
+}
+
+export async function getEnergyStorages(
+    db: AsyncDatabase,
+    count?:number
+): Promise<EnergyStorage[]> {
+    const result = await db.allAsync(`SELECT * FROM EnergyStorage`) as EnergyStorage[]
+    return result
+}
+
+export async function getEnergyStoragesBySource(
+    db: AsyncDatabase,
+    source: EnergyStorage['source'],
+    count?: number
+): Promise<EnergyStorage[]> {
+    let result;
+    if(count){
+        result = await db.allAsync(`SELECT * FROM EnergyStorage WHERE source = ? ORDER BY Time DESC LIMIT ? `,source,count) as EnergyStorage[]
+    }else{
+        result = await db.allAsync(`SELECT * FROM EnergyStorage WHERE source = ? ORDER BY Time DESC`,source) as EnergyStorage[]
+    }
+    return result
+}
+
+export async function EnergyStorageExists(
+    db: AsyncDatabase,
+    id: EnergyStorage['id']
+): Promise<boolean> {
+    const result = await db.getAsync(`SELECT * FROM EnergyStorage WHERE id = ?`, id)
+    return result !== undefined
+}
+
+export async function addEnergyStorage(
+    db: AsyncDatabase,
+    energyRead: EnergyStorage
+): Promise<void> {
+    await db.runAsync(`INSERT INTO EnergyStorage (time,storage,maxStorage,source) VALUES (?,?,?,?)`,
+        energyRead.time,
+        energyRead.storage,
+        energyRead.maxStorage,
+        energyRead.source
+    )
+}
+
+export async function editEnergyStorage(
+    db: AsyncDatabase,
+    newEnergyRead: EnergyStorage
+) : Promise<void> {
+    const query = 'UPDATE EnergyStorage SET time=?, storage=?, maxStorage=? source=? WHERE id=?'
+    await db.runAsync(query,
+        newEnergyRead.time,
+        newEnergyRead.storage,
+        newEnergyRead.maxStorage,
+        newEnergyRead.source,
         newEnergyRead.id
     )
 }
