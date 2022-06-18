@@ -61,6 +61,13 @@ export async function getEnergyRates(
     return result
 }
 
+export async function getEnergyRateCount(
+    db: AsyncDatabase
+): Promise<number> {
+    const result = await db.getAsync(`SELECT COUNT(*) FROM EnergyRate`) as number
+    return result
+}
+
 export async function getEnergyRatesBySource(
     db: AsyncDatabase,
     source: EnergyRate['source'],
@@ -72,7 +79,7 @@ export async function getEnergyRatesBySource(
     }else{
         result = await db.allAsync(`SELECT * FROM EnergyRate WHERE source = ? ORDER BY Time DESC`,source) as EnergyRate[]
     }
-    return result
+    return result.reverse()
 }
 
 export async function energyRateExists(
@@ -93,6 +100,11 @@ export async function addEnergyRate(
         energyRead.outputRate,
         energyRead.source
     )
+    getEnergyRateCount(db).then((count)=>{
+        if(count > 5000){
+            db.runAsync(`DELETE FROM EnergyRate WHERE id IN (SELECT id FROM EnergyRate ORDER BY id ASC LIMIT 1)`)
+        }
+    })
 }
 
 export async function editEnergyRate(
@@ -128,6 +140,13 @@ export async function getEnergyStorages(
     return result
 }
 
+export async function getEnergyStorageCount(
+    db: AsyncDatabase
+): Promise<number> {
+    const result = await db.getAsync(`SELECT COUNT(*) FROM EnergyStorage`) as number
+    return result
+}
+
 export async function getEnergyStoragesBySource(
     db: AsyncDatabase,
     source: EnergyStorage['source'],
@@ -139,7 +158,7 @@ export async function getEnergyStoragesBySource(
     }else{
         result = await db.allAsync(`SELECT * FROM EnergyStorage WHERE source = ? ORDER BY Time DESC`,source) as EnergyStorage[]
     }
-    return result
+    return result.reverse()
 }
 
 export async function EnergyStorageExists(
@@ -160,6 +179,11 @@ export async function addEnergyStorage(
         energyRead.maxStorage,
         energyRead.source
     )
+    getEnergyStorageCount(db).then((count)=>{
+        if(count > 5000){
+            db.runAsync(`DELETE FROM EnergyStorage WHERE id IN (SELECT id FROM EnergyStorage ORDER BY id ASC LIMIT 1)`)
+        }
+    })
 }
 
 export async function editEnergyStorage(
