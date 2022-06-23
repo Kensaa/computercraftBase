@@ -1,5 +1,5 @@
 import React,{useState,useEffect} from 'react'
-import {Container,Form,Button} from 'react-bootstrap'
+import {Container,Form} from 'react-bootstrap'
 import * as useFetch from "react-fetch-hook";
 
 import AppNavbar from '../../components/AppNavbar'
@@ -64,7 +64,7 @@ export default function EnergyRate({address,plotOptions}) {
         backgroundColor: 'rgba(200, 50, 50, 0.2)',
         borderColor: 'rgba(200, 50, 50, 1)',
         borderWidth: 1,
-        yAxisID: 'y1'
+        yAxisID: 'y'
       }
     ]
   }

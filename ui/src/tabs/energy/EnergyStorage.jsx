@@ -64,7 +64,7 @@ export default function EnergyStorage({address,plotOptions}) {
           backgroundColor: 'rgba(70, 70, 255, 0.2)',
           borderColor: 'rgba(70, 70, 255, 1)',
           borderWidth: 1,
-          yAxisID: 'y1'
+          yAxisID: 'y'
     }
     ]
   }

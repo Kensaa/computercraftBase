@@ -29,7 +29,7 @@ export interface EnergyStoragePayload{
     maxStorage:number,
 }
 
-export type ClientType = 'door' | 'energyRateLogger' | 'energyStorageLogger';
+export type ClientType = 'door' | 'reactor' | 'energyRateLogger' | 'energyStorageLogger';
 
 
 //----------------------------------------------------------------------\\
@@ -55,7 +55,5 @@ export interface EnergyStorage{
     storage:number,
     maxStorage:number,
     source:string,
-
 }
-
 

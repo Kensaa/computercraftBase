@@ -19,7 +19,7 @@ export default function Door({address}) {
       <AppNavbar/>
       {doorLoading ? <p>Loading...</p> : doorError ? <p>Error: {doorError.message}</p> : (
       <Container className='h-75 d-flex flex-column align-items-center border mt-5'>
-        <h1>Door</h1>
+        <h1>Portes</h1>
         <Form.Label>Sélectionnez une porte</Form.Label>
         <Form.Select value={door} onChange={(e)=>setDoor(e.target.value)} className='w-25'>
             {doors.map((door,index) => (<option key={index}>{door}</option>))}

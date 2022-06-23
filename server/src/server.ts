@@ -97,6 +97,31 @@ const WEBSERVERPORT = SOCKETPORT+1;
         }
     })
 
+    expressServer.get('/api/reactor', async (req:Request,res:Response)=>{
+        const reactors = clients.filter(e=>e.type==='reactor')
+        if(!reactors)return res.sendStatus(404)
+        res.send(reactors.map(e=>e.name))
+    })
+
+    expressServer.post('/api/reactor' , async (req:Request,res:Response)=>{
+        const validActions = ['on','off']
+        if(req.body.reactor === undefined || req.body.action === undefined){
+            res.sendStatus(400)
+            return
+        }
+        if(!validActions.includes(req.body.action)){
+            res.sendStatus(400)
+            return
+        }
+        const reactor = clients.filter(e=>e.type==='reactor' && e.name===req.body.reactor)[0]
+        if(reactor){
+            reactor.ws.send(req.body.action)
+            res.sendStatus(200)
+        }else{
+            res.status(404).send('reactor not found')
+        }
+    })
+
     expressServer.get('/api/energy/rate', async (req:Request,res:Response)=>{
         const loggers = clients.filter(e=>e.type==='energyRateLogger').map(e=>e.name)
         res.send(loggers);

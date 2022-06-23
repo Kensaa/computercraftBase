@@ -39,7 +39,7 @@ export async function loadDatabase(
         maxStorage INTEGER NOT NULL,
         source TEXT NOT NULL
     );`)
-    
+
     return db
 }
 
@@ -190,7 +190,7 @@ export async function editEnergyStorage(
     db: AsyncDatabase,
     newEnergyRead: EnergyStorage
 ) : Promise<void> {
-    const query = 'UPDATE EnergyStorage SET time=?, storage=?, maxStorage=? source=? WHERE id=?'
+    const query = 'UPDATE EnergyStorage SET time=?, storage=?, maxStorage=?, source=? WHERE id=?'
     await db.runAsync(query,
         newEnergyRead.time,
         newEnergyRead.storage,

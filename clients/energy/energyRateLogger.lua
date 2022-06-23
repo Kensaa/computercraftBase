@@ -4,7 +4,7 @@ local outputID = '4'
 local input = peripheral.wrap('energyDetector_'..inputID)
 local output = peripheral.wrap('energyDetector_'..outputID)
 
-local url = "ws://home.kensa.fr:3694"
+local url = "ws://kensa.fr:3694"
 local ws, err = http.websocket(url)
 if not err == nil then
     print(err)

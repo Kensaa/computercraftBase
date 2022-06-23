@@ -23,13 +23,13 @@ export const plotOptions = {
             drawOnChartArea: false,
           },
       },
-      y1: {
+      /*y1: {
         type: 'linear',
         display: true,
         position: 'right',
         grid: {
           drawOnChartArea: false,
         },
-      },
+      },*/
     },
   };

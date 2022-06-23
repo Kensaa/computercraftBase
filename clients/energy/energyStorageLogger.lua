@@ -1,4 +1,4 @@
-local cubeTier = 'elite'
+local cubeTier = 'ultimate'
 local cubeCount = 3
 local energyStorage = {}
 
@@ -10,7 +10,7 @@ for i = firstIndex, firstIndex+cubeCount do
     ind = ind + 1
 end
 
-local url = "ws://home.kensa.fr:3694"
+local url = "ws://kensa.fr:3694"
 local ws, err = http.websocket(url)
 if not err == nil then
     print(err)

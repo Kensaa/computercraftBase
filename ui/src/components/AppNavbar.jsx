@@ -12,6 +12,7 @@ export default function AppNavbar() {
             <Nav className="me-auto">
               <Nav.Link as={Link} to='/'>Home</Nav.Link>
               <Nav.Link as={Link} to='/door'>Portes</Nav.Link>
+              <Nav.Link as={Link} to='/reactor'>Reacteurs</Nav.Link>
               <NavDropdown title="Energie">
                 <NavDropdown.Item as={Link} to="/energy/rate">Consommation/Production</NavDropdown.Item>
                 <NavDropdown.Item as={Link} to="/energy/storage">Stockage</NavDropdown.Item>
