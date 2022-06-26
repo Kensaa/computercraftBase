@@ -1,9 +1,9 @@
 import { WebSocket } from "ws";
 import {Request} from 'express'
-export interface Client{
+
+export interface WebsocketClient{
+    id:number,
     ws:WebSocket,
-    type:ClientType,
-    name:string,
 }
 
 //----------------------------------------------------------------------\\
@@ -19,17 +19,49 @@ export interface RegisterPayload{
     type:ClientType,
     name:string,
 }
+
+export interface SubtypedRegisterPayload<T> extends RegisterPayload{
+    subtype:T,
+}
+
+export interface RegisterStoragePayload extends RegisterPayload{
+    storageType:StorageType,
+}
+/*
 export interface EnergyRatePayload{
     inputRate:number,
     outputRate:number,
 }
 
-export interface EnergyStoragePayload{
+*/
+export interface StoragePayload{
     storage:number,
     maxStorage:number,
+    //type:StorageType,
+    data?:FluidData | ItemData
 }
 
-export type ClientType = 'door' | 'reactor' | 'energyRateLogger' | 'energyStorageLogger';
+export interface RatePayload{
+    rate:number,
+}
+
+export interface FluidData{
+    name:string,
+}
+
+export interface ItemData{
+    items:{
+        slot:number,
+        displayName:string,
+        count:number,
+        maxCount:number,
+        name:string
+    }[],
+}
+
+export type ClientType = 'door' | 'reactor' | 'storage' | 'rate'
+export type StorageType = 'energy' | 'fluid'
+export type RateType = 'energy'
 
 
 //----------------------------------------------------------------------\\
@@ -41,19 +73,31 @@ export interface TypedRequest<T> extends Request {
 
 //----------------------------------------------------------------------\\
 //----------------------------DATABASE----------------------------------\\
-export interface EnergyRate{
-    id?:number,
-    time:string,
-    inputRate:number,
-    outputRate:number,
-    source:string,
+
+
+export interface DatabaseClient{
+    id:number,
+    name:string,
+    type:ClientType
+}
+export interface SubtypedClient<T> extends DatabaseClient{
+    subtype:T
 }
 
-export interface EnergyStorage{
-    id?:number,
+export interface Storage{
+    id:number,
     time:string,
     storage:number,
     maxStorage:number,
-    source:string,
+    source:DatabaseClient['name'],
+    type:StorageType,
+    data?:string // ItemData to add
 }
 
+export interface Rate{
+    id:number,
+    time:string,
+    rate:number
+    source:DatabaseClient['name'],
+    type:RateType,
+}

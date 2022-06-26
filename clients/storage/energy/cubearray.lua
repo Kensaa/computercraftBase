@@ -17,10 +17,12 @@ if not err == nil then
     return
 end
 
-local clientType = "energyStorageLogger"
+local clientType = "storage"
 local clientName = "Energie Base"
 
-ws.send('{"event":"register","payload":{"type":"'..clientType..'","name":"'..clientName..'"}}')
+local storageType = 'energy'
+
+ws.send('{"event":"register","payload":{"type":"'..clientType..'","name":"'..clientName..'","subtype":"'..storageType..'"}}')
 
 while true do
     local totalStored = 0
@@ -30,6 +32,6 @@ while true do
         totalCapacity = totalCapacity + energyStorage[i].getMaxEnergy()
     end
 
-    ws.send('{"event":"energyStorage","payload":{"storage":'..totalStored..',"maxStorage":'..totalCapacity..'}}')
+    ws.send('{"event":"pushStorage","payload":{"storage":'..totalStored..',"maxStorage":'..totalCapacity..'}}')
     sleep(1)
 end

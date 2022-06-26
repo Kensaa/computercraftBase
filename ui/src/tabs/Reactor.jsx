@@ -5,7 +5,8 @@ import * as useFetch from "react-fetch-hook";
 import AppNavbar from '../components/AppNavbar'
 
 
-export default function Door({address}) {
+export default function Door({config}) {
+  const address = config.address
 
   const [reactor,setReactor] = useState(0)
   const { isLoading: reactorLoading, data:reactors, error: reactorError } = useFetch(address+"api/reactor", {})

@@ -3,7 +3,7 @@ import {Container} from 'react-bootstrap'
 
 import AppNavbar from '../components/AppNavbar'
 
-export default function Home({address}) {
+export default function Home({config}) {
   return (
     <Container fluid className='m-0 p-0 h-100'>
       <AppNavbar/>
