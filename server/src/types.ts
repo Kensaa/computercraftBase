@@ -23,17 +23,6 @@ export interface RegisterPayload{
 export interface SubtypedRegisterPayload<T> extends RegisterPayload{
     subtype:T,
 }
-
-export interface RegisterStoragePayload extends RegisterPayload{
-    storageType:StorageType,
-}
-/*
-export interface EnergyRatePayload{
-    inputRate:number,
-    outputRate:number,
-}
-
-*/
 export interface StoragePayload{
     storage:number,
     maxStorage:number,
@@ -91,7 +80,7 @@ export interface Storage{
     maxStorage:number,
     source:DatabaseClient['name'],
     type:StorageType,
-    data?:string // ItemData to add
+    data?:string
 }
 
 export interface Rate{

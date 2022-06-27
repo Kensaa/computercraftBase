@@ -3,7 +3,7 @@ import * as express from 'express'
 import * as cors from 'cors'
 import * as path from 'path'
 import { Request,Response } from 'express'
-import { WebsocketClient, DatabaseClient,SubtypedClient,RegisterStoragePayload, WSMessage, RegisterPayload, StoragePayload, StorageType, RateType, SubtypedRegisterPayload, RatePayload } from './types'
+import { WebsocketClient,SubtypedClient, WSMessage, RegisterPayload, StoragePayload, StorageType, RateType, SubtypedRegisterPayload, RatePayload } from './types'
 import * as sql from './sql'
 
 const SOCKETPORT = 3694;
@@ -65,20 +65,6 @@ const WEBSERVERPORT = SOCKETPORT+1;
                 websockets.push({ws,id})
                 console.log(`registered client with name "${payload.name}" and type "${payload.type}" (id:${id})`)
             }
-            /*// a refaire
-            else if (message.event==='energyRate'){
-                const payload = message.payload as EnergyRatePayload
-                const websocket = websockets.find(e=>e.ws===ws)
-                if(websocket){
-                    const client = await sql.getClient(database,websocket.id)
-                    const energyRate = {
-                        time:new Date().getTime().toString(),
-                        ...payload,
-                        source:client.name
-                    }
-                    sql.addEnergyRate(database,energyRate)
-                }
-            }*/
             else if(message.event === 'pushStorage'){
                 const payload = message.payload as StoragePayload
                 const websocket = websockets.find(e=>e.ws===ws)
