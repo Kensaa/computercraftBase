@@ -37,12 +37,12 @@ export const pieOptions = {
   }
 }
 
-export const address = "http://localhost:3695/"
 
 export const fetchOptions = {
-    method: 'GET',
-    headers: {
-      'count': '100'
-    }
+  method: 'GET',
+  headers: {
+    'count': '100'
+  }
 }
-//export const address = "http://kensa.fr:3695/"
+//export const address = "http://localhost:3695/"
+export const address = "http://kensa.fr:3695/"

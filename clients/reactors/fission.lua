@@ -4,22 +4,27 @@ if not err == nil then
     print(err)
     return
 end
-
-local clientType = "rate"
-local clientName = "Rate Base"
-
-local rateType = 'energy'
-
-ws.send('{"event":"register","payload":{"type":"'..clientType..'","name":"'..clientName..'","rateType":"'..rateType..'"}}')
-
+ 
+local clientType = "reactor"
+local clientName = "fission"
+ 
+ws.send('{"event":"register","payload":{"type":"'..clientType..'","name":"'..clientName..'"}}')
+ 
+reactor = peripheral.wrap('back')
+ 
 while true do
-    local totalStored = 0
-    local totalCapacity = 0
-    for i = 1,cubeCount do
-        totalStored = totalStored + energyStorage[i].getEnergy()
-        totalCapacity = totalCapacity + energyStorage[i].getMaxEnergy()
+    local _, url, response, isBinary = os.pullEvent("websocket_message")
+    if isBinary then
+        print('message is in binary')
+    else
+        print('Received: ' .. response)
+ 
+        if response == "on" then
+            print("starting reactor")
+            reactor.activate()
+        elseif response == "off" then
+            print("stopping reactor")
+            reactor.scram()
+        end
     end
-
-    ws.send('{"event":"pushStorage","payload":{"storage":'..totalStored..',"maxStorage":'..totalCapacity..',"type":"'..storageType..'"}}')
-    sleep(1)
 end

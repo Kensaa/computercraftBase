@@ -10,7 +10,6 @@ export default function AppNavbar() {
             <Navbar.Toggle aria-controls="basic-navbar-nav" />
                 
             <Nav className="me-auto">
-              <Nav.Link as={Link} to='/'>Home</Nav.Link>
               <Nav.Link as={Link} to='/door'>Portes</Nav.Link>
               <Nav.Link as={Link} to='/reactor'>Reacteurs</Nav.Link>
               {/*<NavDropdown title="Stockages">
