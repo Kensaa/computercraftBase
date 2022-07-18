@@ -64,6 +64,15 @@ export interface TypedRequest<T> extends Request {
 //----------------------------DATABASE----------------------------------\\
 
 
+export interface User{
+    id:number,
+    username:string,
+    password:string,
+    permissions:{
+        [key:string]:number,
+    },
+}
+
 export interface DatabaseClient{
     id:number,
     name:string,

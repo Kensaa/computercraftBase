@@ -71,7 +71,8 @@ export async function getUserByName(
     username: User['username']
 ): Promise<User> {
     const query = 'SELECT * FROM Users WHERE username=?'
-    const result = await db.getAsync(query, username) as User
+    var queryResult = await db.getAsync(query, username) as {id:number,username:string,password:string,permissions:string}
+    const result = {...queryResult, permissions: JSON.parse(queryResult.permissions)} as User
     return result
 }
 
@@ -80,7 +81,8 @@ export async function getUserById(
     id: User['id']
 ): Promise<User> {
     const query = 'SELECT * FROM Users WHERE id=?'
-    const result = await db.getAsync(query, id) as User
+    const queryResult = await db.getAsync(query, id) as {id:number,username:string,password:string,permissions:string}
+    const result = {...queryResult, permissions: JSON.parse(queryResult.permissions)} as User
     return result
 }
 
@@ -94,7 +96,7 @@ export async function addUser(
     await db.runAsync(query,
         username,
         password,
-        permissions
+        JSON.stringify(permissions)
     )
 }
 
