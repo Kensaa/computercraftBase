@@ -34,3 +34,12 @@ export function useFetch(address,options){
     return {data, loading, error};
 
 }
+
+//sorry for the future me
+export function useLocalStorage(key,defaultValue){
+    const [value, setValue] = useState(localStorage.getItem(key) ?? defaultValue);
+    useEffect(()=>{
+        localStorage.setItem(key,value);
+    },[value,key]);
+    return [value, setValue];
+}
