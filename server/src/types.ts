@@ -49,7 +49,7 @@ export interface ItemData{
 }
 
 export type ClientType = 'door' | 'reactor' | 'storage' | 'rate'
-export type StorageType = 'energy' | 'fluid'
+export type StorageType = 'energy' | 'fluid' | 'item'
 export type RateType = 'energy'
 
 
@@ -64,11 +64,32 @@ export interface TypedRequest<T> extends Request {
 // ----------------------------DATABASE---------------------------------- \\
 
 
+/*
+
+Door : 
+    0 - nothing
+    1 - see doors
+    2 - interact with doors
+Reactor :
+    0 - nothing
+    1 - see reactors
+    2 - start and stop reactors
+    3 - edit reactors rate
+Storage :
+    0 - nothing
+    1 - see storages
+    2 - see energy storages content
+    3 - see fluid storages content
+    4 - see item storages content
+    5 - see all storages content
+Rate :
+    0 - nothing
+    1 - see rates
+    2 - see rate content
+*/
+
 export interface Permissions {
-    door:number,
-    reactor:number,
-    storage:number,
-    rate:number,
+    [key:string]:number
 }
 
 export interface User{
