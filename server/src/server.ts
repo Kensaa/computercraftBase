@@ -108,17 +108,17 @@ function authenticateJWT(req: Request, res: Response, next: NextFunction) {
 
     // WEB SERVER HANDLERS
 
-    expressServer.post('/api/login',async (req:Request,res:Response)=>{
+    expressServer.post('/api/user/login',async (req:Request,res:Response)=>{
         const { username, password } = req.body
         if (!username || !password) {
             res.sendStatus(400)
             return
         }
 
-        const user = await sql.getUserByName(database, username)
-        if (!user) {
+        if (!await sql.userExists(database,username)) {
             return res.sendStatus(404)
         }
+        const user = await sql.getUserByName(database, username)
 
         if(user.password === password){
             const token = jwt.sign({ id:user.id, permissions:user.permissions }, authTokenSecret)
@@ -129,7 +129,7 @@ function authenticateJWT(req: Request, res: Response, next: NextFunction) {
         }
     })
 
-    expressServer.post('/api/register',async (req:Request,res:Response)=>{
+    expressServer.post('/api/user/register',async (req:Request,res:Response)=>{
         const { username, password } = req.body
 
         if(!username || !password){
@@ -148,6 +148,12 @@ function authenticateJWT(req: Request, res: Response, next: NextFunction) {
     
         const { password:_, ...userInfo } = user
         res.status(200).json({ token, user:userInfo })
+    })
+
+    expressServer.get('/api/user/',authenticateJWT,async (req:Request,res:Response)=>{
+        const { id } = res.locals.user
+        const { password:_, ...userInfo } = await sql.getUserById(database,id)
+        res.status(200).json(userInfo)
     })
     
     expressServer.get('/api/clients', async (req:Request,res:Response)=>{
