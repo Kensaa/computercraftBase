@@ -1,17 +1,35 @@
 import * as ws from 'ws'
 import * as express from 'express'
+import * as jwt from 'jsonwebtoken'
 import * as cors from 'cors'
 import * as path from 'path'
-import { Request,Response } from 'express'
-import { WebsocketClient,SubtypedClient, WSMessage, RegisterPayload, StoragePayload, StorageType, RateType, SubtypedRegisterPayload, RatePayload } from './types'
+import { Request,Response,NextFunction } from 'express'
+import { WebsocketClient,SubtypedClient, WSMessage, RegisterPayload, StoragePayload, StorageType, RateType, SubtypedRegisterPayload, RatePayload,Permissions } from './types'
 import * as sql from './sql'
+import {randomBytes} from 'crypto'
 
-const SOCKETPORT = 3694;
-const WEBSERVERPORT = SOCKETPORT+1;
+const SOCKETPORT = 3694
+const WEBSERVERPORT = SOCKETPORT+1
+
+// Get fucked ^^ 
+const authTokenSecret = randomBytes(64).toString('hex')
+
+function authenticateJWT(req: Request, res: Response, next: NextFunction) {
+    const authHeader = req.headers.authorization
+    if (authHeader) {
+        jwt.verify(authHeader.split(' ')[1], authTokenSecret, (err, user) => {
+            if (err) return res.sendStatus(403)
+            res.locals.user = user
+            next()
+        })
+    } else {
+        res.sendStatus(401)
+    }
+}
 
 (async ()=>{
-    var websockets:WebsocketClient[] = []
-    var database = await sql.loadDatabase('database.db')
+    let websockets:WebsocketClient[] = []
+    const database = await sql.loadDatabase('database.db')
 
     const wsServer = new ws.Server({ port: SOCKETPORT })
     console.log(`websocket server started on port ${SOCKETPORT}`)
@@ -24,10 +42,13 @@ const WEBSERVERPORT = SOCKETPORT+1;
     
     const awaitForResponse = (socket:ws.WebSocket)=> {
         return new Promise<string>((resolve,reject)=>{
+            setTimeout(()=>reject('timed out'), 20000)
             socket.once('response',resolve)
         })
     }
     
+    // WEBSOCKET HANDLERS
+
     wsServer.on('connection', ws => {
         ws.on('close',async ()=>{
             const websocket = websockets.find(c=>c.ws===ws)
@@ -37,7 +58,7 @@ const WEBSERVERPORT = SOCKETPORT+1;
                 console.log(`unregistering client with name "${client.name}" and type "${client.type}"`)
                 await sql.removeClient(database,id)
             }
-            websockets = websockets.filter(e=>e.ws!==ws);
+            websockets = websockets.filter(e=>e.ws!==ws)
     
         })
         ws.on('message', async (data) => {
@@ -51,7 +72,7 @@ const WEBSERVERPORT = SOCKETPORT+1;
                     return
                 }
 
-                var id;
+                let id
                 if(payload.type==='storage'){
                     const storagePayload = payload as SubtypedRegisterPayload<StorageType>
                     id = await sql.addClient(database,storagePayload.name,storagePayload.type,storagePayload.subtype)
@@ -59,7 +80,7 @@ const WEBSERVERPORT = SOCKETPORT+1;
                     const ratePayload = payload as SubtypedRegisterPayload<RateType>
                     id = await sql.addClient(database,ratePayload.name,ratePayload.type,ratePayload.subtype)
                 }else{
-                    id = await sql.addClient(database,payload.name,payload.type);
+                    id = await sql.addClient(database,payload.name,payload.type)
                 }
 
                 websockets.push({ws,id})
@@ -84,18 +105,62 @@ const WEBSERVERPORT = SOCKETPORT+1;
             }
         })
     })
+
+    // WEB SERVER HANDLERS
+
+    expressServer.post('/api/login',async (req:Request,res:Response)=>{
+        const { username, password } = req.body
+        if (!username || !password) {
+            res.sendStatus(400)
+            return
+        }
+
+        const user = await sql.getUserByName(database, username)
+        if (!user) {
+            return res.sendStatus(404)
+        }
+
+        if(user.password === password){
+            const token = jwt.sign({ id:user.id, permissions:user.permissions }, authTokenSecret)
+            const { password:_, ...userInfo } = user
+            res.status(200).json({ token, user:userInfo })
+        }else{
+            res.sendStatus(401)
+        }
+    })
+
+    expressServer.post('/api/register',async (req:Request,res:Response)=>{
+        const { username, password } = req.body
+
+        if(!username || !password){
+            return res.sendStatus(400)
+        }
+
+        if(await sql.userExists(database,username)){
+            return res.sendStatus(409)
+        }
+        const defaultPermissions = {door:0,reactor:0,storage:0,rate:0} as Permissions
+        await sql.addUser(database,username,password,defaultPermissions)
+        
+        const user = await sql.getUserByName(database,username)
+
+        const token = jwt.sign({ id:user.id, permissions:user.permissions }, authTokenSecret)
     
-    expressServer.get('/api/clients',async (req:Request,res:Response)=>{
+        const { password:_, ...userInfo } = user
+        res.status(200).json({ token, user:userInfo })
+    })
+    
+    expressServer.get('/api/clients', async (req:Request,res:Response)=>{
         res.json(await sql.getClients(database))
     })
     
     expressServer.get('/api/door', async (req:Request,res:Response)=>{
-        const doors = await sql.getClientsByType(database,'door');
+        const doors = await sql.getClientsByType(database,'door')
         if(!doors)return res.sendStatus(404)
         res.send(doors.map(e=>e.name))
     })
     
-    expressServer.post('/api/door' , async (req:Request,res:Response)=>{
+    expressServer.post('/api/door', async (req:Request,res:Response)=>{
         const validActions = ['open','close','enter']
         if(req.body.door === undefined || req.body.action === undefined){
             res.sendStatus(400)
@@ -116,7 +181,7 @@ const WEBSERVERPORT = SOCKETPORT+1;
     })
 
     expressServer.get('/api/reactor', async (req:Request,res:Response)=>{
-        const reactors = await sql.getClientsByType(database,'reactor');
+        const reactors = await sql.getClientsByType(database,'reactor')
         if(!reactors)return res.sendStatus(404)
         res.send(reactors.map(e=>e.name))
     })
@@ -148,7 +213,7 @@ const WEBSERVERPORT = SOCKETPORT+1;
     })
 
     expressServer.get('/api/storages/:name' , async (req:Request,res:Response)=>{
-        var count = 100
+        let count = 100
         if(req.headers.count){
             count = parseInt(req.headers.count as string)
         }
@@ -168,7 +233,7 @@ const WEBSERVERPORT = SOCKETPORT+1;
     })
 
     expressServer.get('/api/rates/:name' , async (req:Request,res:Response)=>{
-        var count = 100
+        let count = 100
         if(req.headers.count){
             count = parseInt(req.headers.count as string)
         }
@@ -183,6 +248,6 @@ const WEBSERVERPORT = SOCKETPORT+1;
 
     expressServer.use(express.static('public'))
     expressServer.get('*', (req: Request, res: Response) =>{
-        res.sendFile(path.join(__dirname,'..','public','index.html'));
-    });
+        res.sendFile(path.join(__dirname,'..','public','index.html'))
+    })
 })()

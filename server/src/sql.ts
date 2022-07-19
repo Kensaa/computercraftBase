@@ -26,7 +26,6 @@ export async function loadDatabase(
     db.getAsync = promisify(db.get)
     db.allAsync = promisify(db.all)
 
-    //create table to store user
     await db.runAsync(`CREATE TABLE IF NOT EXISTS Users (
         id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL UNIQUE,
         username TEXT NOT NULL,
@@ -71,7 +70,7 @@ export async function getUserByName(
     username: User['username']
 ): Promise<User> {
     const query = 'SELECT * FROM Users WHERE username=?'
-    var queryResult = await db.getAsync(query, username) as {id:number,username:string,password:string,permissions:string}
+    const queryResult = await db.getAsync(query, username) as {id:number,username:string,password:string,permissions:string}
     const result = {...queryResult, permissions: JSON.parse(queryResult.permissions)} as User
     return result
 }

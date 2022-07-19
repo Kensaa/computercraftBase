@@ -1,4 +1,4 @@
-import { WebSocket } from "ws";
+import { WebSocket } from 'ws'
 import {Request} from 'express'
 
 export interface WebsocketClient{
@@ -6,13 +6,14 @@ export interface WebsocketClient{
     ws:WebSocket,
 }
 
-//----------------------------------------------------------------------\\
-//-------------------------------WEBSOCKET------------------------------\\
+// ---------------------------------------------------------------------- \\
+// -------------------------------WEBSOCKET------------------------------ \\
 
 
 export interface WSMessage{
     event:string,
-    payload:Object,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    payload:Record<string, any>,
 } 
 
 export interface RegisterPayload{
@@ -26,7 +27,6 @@ export interface SubtypedRegisterPayload<T> extends RegisterPayload{
 export interface StoragePayload{
     storage:number,
     maxStorage:number,
-    //type:StorageType,
     data?:FluidData | ItemData
 }
 
@@ -53,24 +53,29 @@ export type StorageType = 'energy' | 'fluid'
 export type RateType = 'energy'
 
 
-//----------------------------------------------------------------------\\
-//----------------------------WEBSERVER---------------------------------\\
+// ---------------------------------------------------------------------- \\
+// ----------------------------WEBSERVER--------------------------------- \\
 export interface TypedRequest<T> extends Request {
     body: T
 }
 
 
-//----------------------------------------------------------------------\\
-//----------------------------DATABASE----------------------------------\\
+// ---------------------------------------------------------------------- \\
+// ----------------------------DATABASE---------------------------------- \\
 
+
+export interface Permissions {
+    door:number,
+    reactor:number,
+    storage:number,
+    rate:number,
+}
 
 export interface User{
     id:number,
     username:string,
     password:string,
-    permissions:{
-        [key:string]:number,
-    },
+    permissions:Permissions
 }
 
 export interface DatabaseClient{
