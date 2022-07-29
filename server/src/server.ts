@@ -37,6 +37,11 @@ function authenticateJWT(req: Request, res: Response, next: NextFunction) {
     u.permissions.admin = 1
     await sql.editUser(database,u)
     */
+    /*
+    const u = await sql.getUserByName(database,'Kensa')
+    u.password = "a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3"
+    await sql.editUser(database,u)
+    */
 
     const wsServer = new ws.Server({ port: SOCKETPORT })
     console.log(`websocket server started on port ${SOCKETPORT}`)
@@ -214,14 +219,13 @@ function authenticateJWT(req: Request, res: Response, next: NextFunction) {
     // ------------------- DOOR ------------------- \\
     
     expressServer.get('/api/doors', authenticateJWT, async (req:Request,res:Response)=>{
-        if(!checkPermissions(res.locals.user.permissions,'door',1))return res.sendStatus(403)
-
+        if(!checkPermissions(res.locals.user.permissions,'door',1)) return res.sendStatus(403)
         const doors = await sql.getClientsByType(database,'door')
         if(!doors)return res.sendStatus(404)
         res.send(doors.map(e=>e.name))
     })
     
-    expressServer.post('/api/door', async (req:Request,res:Response)=>{
+    expressServer.post('/api/door',authenticateJWT, async (req:Request,res:Response)=>{
         if(!checkPermissions(res.locals.user.permissions,'door',2))return res.sendStatus(403)
 
         const validActions = ['open','close','enter']

@@ -35,11 +35,20 @@ export function useFetch(address,options){
 
 }
 
-//sorry for the future me
-export function useLocalStorage(key,defaultValue){
-    const [value, setValue] = useState(localStorage.getItem(key) ?? defaultValue);
-    useEffect(()=>{
-        localStorage.setItem(key,value);
-    },[value,key]);
-    return [value, setValue];
+
+//tres bricolé
+
+export function useAuth(){
+    const [connected, setConnected] = useState(false);
+    const [info, setInfo] = useState({});
+
+    const login = (info) => {
+        setInfo(info);
+        setConnected(true);
+    }
+    const logout = () => {
+        setConnected(false);
+        setInfo({});
+    }
+    return [connected,info,login,logout]
 }
