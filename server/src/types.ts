@@ -1,4 +1,4 @@
-import { WebSocket } from "ws";
+import { WebSocket } from 'ws'
 import {Request} from 'express'
 
 export interface WebsocketClient{
@@ -6,13 +6,14 @@ export interface WebsocketClient{
     ws:WebSocket,
 }
 
-//----------------------------------------------------------------------\\
-//-------------------------------WEBSOCKET------------------------------\\
+// ---------------------------------------------------------------------- \\
+// -------------------------------WEBSOCKET------------------------------ \\
 
 
 export interface WSMessage{
     event:string,
-    payload:Object,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    payload:Record<string, any>,
 } 
 
 export interface RegisterPayload{
@@ -26,7 +27,6 @@ export interface SubtypedRegisterPayload<T> extends RegisterPayload{
 export interface StoragePayload{
     storage:number,
     maxStorage:number,
-    //type:StorageType,
     data?:FluidData | ItemData
 }
 
@@ -49,20 +49,55 @@ export interface ItemData{
 }
 
 export type ClientType = 'door' | 'reactor' | 'storage' | 'rate'
-export type StorageType = 'energy' | 'fluid'
+export type StorageType = 'energy' | 'fluid' | 'item'
 export type RateType = 'energy'
 
 
-//----------------------------------------------------------------------\\
-//----------------------------WEBSERVER---------------------------------\\
+// ---------------------------------------------------------------------- \\
+// ----------------------------WEBSERVER--------------------------------- \\
 export interface TypedRequest<T> extends Request {
     body: T
 }
 
 
-//----------------------------------------------------------------------\\
-//----------------------------DATABASE----------------------------------\\
+// ---------------------------------------------------------------------- \\
+// ----------------------------DATABASE---------------------------------- \\
 
+
+/*
+
+Door : 
+    0 - nothing
+    1 - see doors
+    2 - interact with doors
+Reactor :
+    0 - nothing
+    1 - see reactors
+    2 - start and stop reactors
+    3 - edit reactors rate
+Storage :
+    0 - nothing
+    1 - see storages
+    2 - see energy storages content
+    3 - see fluid storages content
+    4 - see item storages content
+    5 - see all storages content
+Rate :
+    0 - nothing
+    1 - see rates
+    2 - see rate content
+*/
+
+export interface Permissions {
+    [key:string]:number
+}
+
+export interface User{
+    id:number,
+    username:string,
+    password:string,
+    permissions:Permissions
+}
 
 export interface DatabaseClient{
     id:number,

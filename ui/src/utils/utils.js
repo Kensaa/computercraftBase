@@ -34,3 +34,21 @@ export function useFetch(address,options){
     return {data, loading, error};
 
 }
+
+
+//tres bricolé
+
+export function useAuth(){
+    const [connected, setConnected] = useState(false);
+    const [info, setInfo] = useState({});
+
+    const login = (info) => {
+        setInfo(info);
+        setConnected(true);
+    }
+    const logout = () => {
+        setConnected(false);
+        setInfo({});
+    }
+    return [connected,info,login,logout]
+}
