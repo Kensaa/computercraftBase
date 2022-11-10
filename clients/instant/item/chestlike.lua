@@ -1,28 +1,26 @@
-local url = "ws://kensa.fr:3694"
+local url = "ws://localhost:3694"
 local ws, err = http.websocket(url)
 if not err == nil then
     print(err)
     return
 end
 
-local clientType = "storage"
+local clientType = "instant grapher"
 local clientName = "chest1"
 
-local storageType = "item"
+local dataType = '{"type":"chest","unit":"","keys":["storage","capacity","items"]}'
 
-ws.send('{"event":"register","payload":{"type":"'..clientType..'","name":"'..clientName..'","subtype":"'..storageType..'"}}')
-
+local registerMsg = '{"action":"register","payload":{"id":"'..clientName..'","clientType":"'..clientType..'","dataType":'..dataType..'}}'
+ws.send(registerMsg)
 
 local chest = peripheral.wrap('back')
 
 while true do
-
     local storage = 0
     for i, item in pairs(chest.list()) do
         storage = storage + 1
     end
-    --local name = chest.getStored().name
-    local maxStorage = chest.size()
+    local capacity = chest.size()
 
     local items = {}
     for i, item in pairs(chest.list()) do
@@ -47,6 +45,6 @@ while true do
     end
     json = json .. ']'
 
-    ws.send('{"event":"pushStorage","payload":{"storage":'..storage..',"maxStorage":'..maxStorage..',"data":{"items":'..json..'}}}')
+    ws.send('{"action":"data","payload":{"data":{"storage":'..storage..',"capacity":'..capacity..',"items":'..json..'}}}')
     sleep(1)
 end
