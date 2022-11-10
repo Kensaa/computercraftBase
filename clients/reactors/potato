@@ -1,0 +1,40 @@
+local url = "ws://kensa.fr:3694"
+local ws, err = http.websocket(url)
+if not err == nil then
+    print(err)
+    return
+end
+function on()
+    redstone.setOutput('top', true)
+    redstone.setOutput('back', true)
+end
+function off()
+    redstone.setOutput('top', false)
+    redstone.setOutput('back', false)
+end
+
+ 
+local clientType = "reactor"
+local clientName = "Potato Reactor"
+
+ 
+ws.send('{"event":"register","payload":{"type":"'..clientType..'","name":"'..clientName..'"}}')
+ 
+on()
+
+while true do
+    local _, url, response, isBinary = os.pullEvent("websocket_message")
+    if isBinary then
+        print('message is in binary')
+    else
+        print('Received: ' .. response)
+ 
+        if response == "on" then
+            print("starting reactor")
+            on()
+        elseif response == "off" then
+            print("stopping reactor")
+            off()
+        end
+    end
+end
