@@ -62,3 +62,10 @@ export interface InstantData {
     source: string,
     data: string
 }
+
+// Interface representing the User in the form in which it is stored in the database
+export interface User {
+    id?: number,
+    username: string,
+    password: string
+}

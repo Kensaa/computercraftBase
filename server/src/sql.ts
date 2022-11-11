@@ -1,6 +1,6 @@
 import { Database } from 'sqlite3'
 import { promisify } from 'util'
-import { Client, InstantData, TimeData } from './type'
+import { Client, InstantData, TimeData, User } from './type'
 
 const MAXLENGTH = 1000
 
@@ -49,8 +49,7 @@ export async function loadDatabase(
     await db.runAsync(`CREATE TABLE IF NOT EXISTS Users (
         id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL UNIQUE,
         username TEXT NOT NULL,
-        password TEXT NOT NULL,
-        permissions TEXT NOT NULL
+        password TEXT NOT NULL
     );`)
 
     return db
@@ -158,4 +157,33 @@ export async function getInstantData(
 ) : Promise<InstantData> {
     const result = await db.getAsync('SELECT * FROM InstantData WHERE source = ?', id) as InstantData
     return result
+}
+
+// ------------------------------------------------------------------------------------------------------------------------ \\
+
+export async function getUserByName(
+    database: AsyncDatabase,
+    username: string
+) : Promise<User> {
+    const result = await database.getAsync('SELECT * FROM Users WHERE username = ?', username) as User
+    return result
+}
+
+export async function userExists(
+    database: AsyncDatabase,
+    username: string
+) : Promise<boolean> {
+    const result = await database.allAsync('SELECT * FROM Users WHERE username= ?', username) as User[]
+    return result.length > 0
+}
+
+export async function addUser(
+    database: AsyncDatabase,
+    username: string,
+    password: string
+) : Promise<void> {
+    await database.runAsync('INSERT INTO Users (username, password) VALUES (?,?)',
+        username,
+        password
+    )
 }

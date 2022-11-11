@@ -1,14 +1,36 @@
 import * as ws from 'ws'
 import * as express from 'express'
 import * as cors from 'cors'
-import { Request, Response } from 'express'
+import { Request, Response, NextFunction } from 'express'
 import * as sql from './sql'
+import * as jwt from 'jsonwebtoken'
 import { WSMessage, RegisterPayload, Client, DataPayload } from './type'
+import {randomBytes} from 'crypto'
+
+const authTokenSecret = randomBytes(64).toString('hex')
 
 const SOCKETPORT = 3694
 const WEBSERVERPORT = SOCKETPORT+1
 
-let clients: Client[] = [];
+let clients: Client[] = []
+
+function authenticateJWT(req: Request, res: Response, next: NextFunction) {
+    const authHeader = req.headers.authorization
+    if (authHeader) {
+        jwt.verify(authHeader.split(' ')[1], authTokenSecret, (err, user) => {
+            if (err) return res.sendStatus(403)
+            res.locals.user = user
+            next()
+        })
+    } else {
+        res.sendStatus(401)
+    }
+}
+
+function generateAuthToken(user: {id: number, username: string}) {
+    return jwt.sign(user, authTokenSecret)
+}
+
 
 (async ()=>{
     const wsServer = new ws.Server({ port: SOCKETPORT })
@@ -21,7 +43,7 @@ let clients: Client[] = [];
 
     const database = await sql.loadDatabase('database.db')
 
-    wsServer.on('connection',ws => {
+    wsServer.on('connection', ws => {
         ws.on('message',async data => {
             const message: WSMessage = JSON.parse(data.toString())
             
@@ -56,7 +78,7 @@ let clients: Client[] = [];
         })
     })
 
-    expressServer.get('/api/client/fetch', async (req: Request, res: Response) => {
+    expressServer.get('/api/client/fetch', authenticateJWT, async (req: Request, res: Response) => {
         /*
         *   This endpoint is used to fetch data from the database
         body: {
@@ -90,7 +112,7 @@ let clients: Client[] = [];
         res.status(200).json(queryResponses)
     })
 
-    expressServer.get('/api/client/list', async (req: Request, res: Response) => {
+    expressServer.get('/api/client/list', authenticateJWT, async (req: Request, res: Response) => {
         /*
         *   This endpoint is used to list the data available in the database
         body: {
@@ -140,7 +162,7 @@ let clients: Client[] = [];
         }
     })
 
-    expressServer.post('/api/client/action', async (req: Request, res: Response) => {
+    expressServer.post('/api/client/action', authenticateJWT, async (req: Request, res: Response) => {
         /*
         *   This endpoint is used to send an action to a client
         body: {
@@ -170,4 +192,61 @@ let clients: Client[] = [];
         res.status(200).send('action sent')
     })
 
+    expressServer.post('/api/user/register', async (req: Request, res: Response) => {
+        /*
+        *   This endpoint is used to register a user
+        body: {
+            username: [username],
+            password: [hashed password]
+        }*/
+        const { username, password } = req.body
+
+        if(!username) return res.status(400).send('username not provided')
+        if(!password) return res.status(400).send('password not provided')
+
+        if(await sql.userExists(database, username)) return res.status(409).send('username already taken')
+
+        await sql.addUser(database, username, password)
+
+        const user = await sql.getUserByName(database, username)
+        if(!user || !user.id) return res.status(500).send('something went wrong')
+        const token = generateAuthToken({id: user.id, username: user.username})
+
+        res.status(200).json({
+            token,
+            user: {
+                id: user.id,
+                username: user.username
+            }
+        })
+    })
+
+    expressServer.post('/api/user/login', async (req: Request, res: Response) => {
+        /*
+        *   This endpoint is used to login a user
+        body: {
+            username: [username],
+            password: [hashed password]
+        }*/
+        const { username, password } = req.body
+
+        if(!username) return res.status(400).send('username not provided')
+        if(!password) return res.status(400).send('password not provided')
+
+        const user = await sql.getUserByName(database, username)
+        if(!user) return res.status(404).send('user not found')
+        if(user.password !== password) return res.status(401).send('wrong password')
+
+        if(!user.id) return res.status(500).send('something went wrong')
+
+        const token = generateAuthToken({id: user.id, username: user.username})
+
+        res.status(200).json({
+            token,
+            user: {
+                id: user.id,
+                username: user.username
+            }
+        })
+    })
 })()
