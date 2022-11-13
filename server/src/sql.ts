@@ -30,7 +30,8 @@ export async function loadDatabase(
         dbid INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL UNIQUE,
         id TEXT NOT NULL,
         clientType TEXT NOT NULL,
-        dataType TEXT NOT NULL
+        dataType TEXT NOT NULL,
+        connected INTEGER NOT NULL
     );`)
 
     await db.runAsync(`CREATE TABLE IF NOT EXISTS TimeData (
@@ -90,15 +91,25 @@ export async function addClient(
     db: AsyncDatabase,
     id: Client['id'],
     clientType: Client['clientType'],
-    dataType: Client['dataType']
+    dataType: Client['dataType'],
+    connected: Client['connected'] = true
     ) : Promise<number> {
-    await db.runAsync('INSERT INTO Clients (id, clientType, dataType) VALUES (?,?,?)',
+    await db.runAsync('INSERT INTO Clients (id, clientType, dataType, connected) VALUES (?,?,?,?)',
         id,
         clientType,
-        dataType
+        dataType,
+        connected
     )
     const dbid = (await db.getAsync('SELECT id FROM Clients ORDER BY dbid DESC LIMIT 1') as { dbid: number }).dbid
     return dbid
+}
+
+export async function setClientConnected(
+    database: AsyncDatabase,
+    id: Client['id'],
+    connected: Client['connected']
+) : Promise<void> {
+    await database.runAsync('UPDATE Clients SET connected = ? WHERE id = ?', connected, id)
 }
 
 // ------------------------------------------------------------------------------------------------------------------------ \\
@@ -114,9 +125,9 @@ export async function addTimeData(
         time,
         data,
     )
-    const count = (await db.getAsync('SELECT COUNT(*) FROM TimeData') as { 'COUNT(*)': number })['COUNT(*)']
+    const count = (await db.getAsync('SELECT COUNT(*) FROM TimeData WHERE source = ?', source) as { 'COUNT(*)': number })['COUNT(*)']
     if (count > MAXLENGTH) {
-        await db.runAsync('DELETE FROM TimeData WHERE id IN (SELECT id FROM TimeData ORDER BY id ASC LIMIT ?)', count - MAXLENGTH)
+        await db.runAsync('DELETE FROM TimeData WHERE id IN (SELECT id FROM TimeData WHERE source = ? ORDER BY id ASC LIMIT ?)',source, count - MAXLENGTH)
     }
 }
 

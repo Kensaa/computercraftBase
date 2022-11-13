@@ -52,10 +52,13 @@ function generateAuthToken(user: {id: number, username: string}) {
                 if(clients.find(client => client.id === payload.id)){
                     ws.close()
                 }else{
-                    clients.push({...payload, websocket: ws, dataType: JSON.stringify(payload.dataType)})
-                    if(!await sql.clientExists(database, payload.id)){
-                        sql.addClient(database, payload.id, payload.clientType, JSON.stringify(payload.dataType))
+                    clients.push({...payload, websocket: ws, dataType: JSON.stringify(payload.dataType), connected: true})
+                    if(await sql.clientExists(database, payload.id)){
+                        sql.setClientConnected(database, payload.id, true)
+                    }else{
+                        sql.addClient(database, payload.id, payload.clientType, JSON.stringify(payload.dataType), true)
                     }
+                    console.log(`client "${payload.id}" connected (type : ${payload.clientType})`)
                 }
             }else if(message.action === 'data'){
                 const payload: DataPayload = message.payload
@@ -71,14 +74,14 @@ function generateAuthToken(user: {id: number, username: string}) {
         })
         ws.on('close',async ()=>{
             const client = clients.find(c=>c.websocket===ws)
-            if(client){
-                console.log(`unregistering client with identifier "${client.id}" and type "${client.clientType}"`)
-            }
-            clients = clients.filter(c=>c.websocket!==ws)            
+            if(!client)return
+            console.log(`unregistering client with identifier "${client.id}" and type "${client.clientType}"`)
+            clients = clients.filter(c=>c.websocket!==ws)
+            sql.setClientConnected(database, client.id, false)
         })
     })
 
-    expressServer.get('/api/client/fetch', authenticateJWT, async (req: Request, res: Response) => {
+    expressServer.post('/api/client/fetch', authenticateJWT, async (req: Request, res: Response) => {
         /*
         *   This endpoint is used to fetch data from the database
         body: {
@@ -101,6 +104,7 @@ function generateAuthToken(user: {id: number, username: string}) {
             }
             if(client.clientType === 'time-based grapher'){
                 const data = (await sql.getTimeData(database, identifier, number)).map(data => ({time: data.time, data: JSON.parse(data.data)}))
+                data.reverse()
                 queryResponses.push({identifier, data})
             }else if(client.clientType === 'instant grapher'){
                 const data = await sql.getInstantData(database, identifier)
@@ -112,7 +116,16 @@ function generateAuthToken(user: {id: number, username: string}) {
         res.status(200).json(queryResponses)
     })
 
-    expressServer.get('/api/client/list', authenticateJWT, async (req: Request, res: Response) => {
+    expressServer.get('/api/client/all', authenticateJWT, async (req: Request, res: Response) => {
+        /*
+        *   This endpoint is used to fetch all clients
+        */
+        const clients = await sql.getClients(database)
+        const preparedClients = clients.map(client => ({id: client.id, clientType: client.clientType, dataType: JSON.parse(client.dataType), connected: client.connected}))
+        res.status(200).json(preparedClients)
+    })
+
+    expressServer.post('/api/client/list', authenticateJWT, async (req: Request, res: Response) => {
         /*
         *   This endpoint is used to list the data available in the database
         body: {
@@ -137,7 +150,8 @@ function generateAuthToken(user: {id: number, username: string}) {
                 {
                     id: client.id,
                     clientType: client.clientType,
-                    dataType: JSON.parse(client.dataType)
+                    dataType: JSON.parse(client.dataType),
+                    connected: client.connected
                 }
             ))
             res.status(200).json(preparedData)
@@ -160,6 +174,26 @@ function generateAuthToken(user: {id: number, username: string}) {
             ))
             res.status(200).json(preparedData)
         }
+    })
+
+    expressServer.post('/api/client/get', authenticateJWT, async (req: Request, res: Response) => {
+        /*
+        *   This endpoint is used to fetch one or multiple clients
+        body: {
+            query: [
+                identifier: [identifier of the client]
+            ]
+        }*/
+        const { query } = req.body
+
+        if(!query) return res.status(400).send('query not provided')
+        if(query.length === 0) return res.status(400).send('query is empty')
+        
+        const clients = await sql.getClients(database)
+        const filteredClients = clients.filter(client => query.includes(client.id))
+        const preparedData = filteredClients.map(client => ({...client, dataType: JSON.parse(client.dataType)}))
+
+        res.status(200).json(preparedData)
     })
 
     expressServer.post('/api/client/action', authenticateJWT, async (req: Request, res: Response) => {
@@ -247,6 +281,18 @@ function generateAuthToken(user: {id: number, username: string}) {
                 id: user.id,
                 username: user.username
             }
+        })
+    })
+
+    expressServer.get('/api/user/me', authenticateJWT, async (req: Request, res: Response) => {
+        /*
+        *   This endpoint is used to get the user info
+        */
+        const user = await sql.getUserByName(database, res.locals.user.name)
+        if(!user) return res.status(404).send('user not found')
+        res.status(200).json({
+            id: user.id,
+            username: user.username
         })
     })
 })()

@@ -1,61 +1,68 @@
-import React,{useState,useEffect} from 'react'
-import { Form, Button,Container,Alert } from "react-bootstrap";
-import sha256 from 'crypto-js/sha256';
-import { useNavigate } from 'react-router-dom';
-
+import React, {useState} from 'react'
+import { Form, Button, Container, Alert } from "react-bootstrap";
 import AppNavbar from '../components/AppNavbar'
+import sha256 from 'crypto-js/sha256';
 
-export default function Login({config, auth}) {
-    const navigate = useNavigate()
+import authStore from '../stores/auth'
+import configStore from '../stores/config'
+import { useLocation } from 'wouter';
+
+export default function Login() {
+    const [, setLocation] = useLocation()
     const [validated, setValidated] = useState(false)
     const [username, setUsername] = useState('')
     const [password, setPassword] = useState('')
 
     const [error,setError] = useState('')
 
-    const [connected,info,login,logout] = auth;
+    const login = authStore(state => state.login)
+    const config = configStore(state => ({...state}))
 
-    useEffect(()=>{
-        if(connected) {
-            navigate('/')
-        }
-    },[connected,navigate])
-
-    const onSubmit = (event)=>{
+    const onSubmit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault()
         event.stopPropagation()
         setValidated(true)
-        if(event.currentTarget.checkValidity()){
-            const hashedPassword = sha256(password).toString()
-            fetch(config.address+'api/user/login',{
-                method:'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body:JSON.stringify({username,password:hashedPassword})
-            })
-                .then(res=>{
-                    if(res.status === 404){
-                        return setError('Utilisateur inconnu')
-                    }
-                    if(res.status === 401){
-                        return setError('Mot de passe incorrect')
-                    }
-                    if(res.status !== 200){
-                        return setError('Erreur inconnue')
-                    }
-                    res.json().then(data=>{
-                        login(data)
-                    })
+        if(!event.currentTarget.checkValidity()) return
+        const hashedPassword = sha256(password).toString()
+
+        fetch(config.address + '/api/user/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({username, password: hashedPassword})
+        })
+        .then(res => {
+            if(res.status === 200) {
+                return res.json().then(json => {
+                    login(json)
+                    setLocation('/')
                 })
-                .catch(err=>{
-                    setError(err.message)
-                })
-        }
+            } else{
+                switch(res.status){
+                    case 404: 
+                        showError('User not found')
+                        break
+                    case 401: 
+                        showError('Wrong password')
+                        break
+                    default: 
+                        showError('unknown error')
+                        break
+                }
+            }
+        })
+    }
+    const showError = (err: string) => {
+        setError(err)
+        setTimeout(() => {
+            setError('')
+        }, 3000);
     }
 
-  return (
-    <Container fluid className='m-0 p-0 h-100'>
-        <AppNavbar auth={auth}/>
-        {error && <Alert variant="danger">{error}</Alert>}
+    return (
+    <div className='w-100 h-100 d-flex flex-column'>
+
+        <AppNavbar/>
+        {error && <Alert dismissible variant="danger" onClose={()=>setError('')}>{error}</Alert>}
         <Form noValidate validated={validated} onSubmit={onSubmit} className='h-75 d-flex flex-column align-items-center mt-5'>
             <Form.Group controlId='username' className="mb-3">
                 <Form.Label>Nom d'utilisateur</Form.Label>
@@ -85,6 +92,6 @@ export default function Login({config, auth}) {
             </Form.Group>
             <Button variant="primary" type="submit">Connexion</Button>
         </Form>
-    </Container>
-  )
+    </div>
+    )
 }
