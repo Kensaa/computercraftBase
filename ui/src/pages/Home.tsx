@@ -5,7 +5,7 @@ import { useLocation } from 'wouter'
 
 import authStore from '../stores/auth'
 import configStore from '../stores/config'
-
+ 
 interface Client {
     id: string
     clientType: string
@@ -62,31 +62,11 @@ export default function Home() {
             setShownClients(after)
         }
     }, [clients, searchValue, connectedClientFilter])
-
-    /*const clientClicked = (index: number) => {
-        const client = shownClients[index]
-        console.log(index)
-        let route = ''
-        switch(client.clientType){
-            case 'time-based grapher':
-                route = `/time-based/${client.id}`
-                break
-            case 'instant grapher':
-                route = `/event-based/${client.id}`
-                break
-            case 'actuator':
-                route = `/actuator/${client.id}`
-                break
-            default:
-                route = `/`
-        }
-        setLocation(route)
-    }*/
+    
     const clientClicked = (index: number) => {
         if(selectedClient.includes(index)){
             setSelectedClient(selectedClient.filter((e) => e !== index))
-            console.log('?N???')
-        }else{
+         }else{
             if(selectedClient.length >= config.maxSlectedClient)return
             setSelectedClient([...selectedClient, index])
         }
@@ -95,7 +75,8 @@ export default function Home() {
     const onPressed = () => {
         if(selectedClient.length === 0) return
         const paramString = selectedClient.map((e) => shownClients[e].id).join(',')
-        setLocation(`/graph/${paramString}`)
+        const loc = clients[selectedClient[0]].clientType === 'time-based grapher' ? 'time' : (clients[selectedClient[0]].clientType === 'instant grapher' ? 'instant' : 'actuator')
+        setLocation(`/client/${loc}/${paramString}`)
     }
     return (
         <div className='w-100 h-100 d-flex flex-column'>

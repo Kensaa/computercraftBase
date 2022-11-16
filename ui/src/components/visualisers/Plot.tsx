@@ -11,7 +11,7 @@ import {
     Legend,
     ArcElement
 } from 'chart.js'
-import { Line, Pie } from 'react-chartjs-2';
+import { Line } from 'react-chartjs-2';
 ChartJS.register(
     CategoryScale,
     LinearScale,
@@ -26,17 +26,18 @@ ChartJS.register(
 import configStore from '../../stores/config'
 
 interface PlotProps{
-    data: DataPoint[],
+    data: DataPoint[]
     keys: string[]
     width: string
     height: string
+    name: string
 }
 interface DataPoint {
     data: Record<string,any>
     time:string
 
 }
-export default function Plot({ data, keys, width, height }: PlotProps) {
+export default function Plot({ data, keys, width, height, name }: PlotProps) {
     const config = configStore(state => ({...state}))
     
     const plotData = useMemo(() =>({
@@ -51,9 +52,20 @@ export default function Plot({ data, keys, width, height }: PlotProps) {
             }
         ))
     }),[data, keys, config.plotColors])
+
+    const plotOptions = useMemo(() => ({
+        ...config.plotConfig,
+        plugins: {
+            title: {
+                display: true,
+                text: name
+            }
+        }
+
+    }), [config.plotConfig, name])
     return (
         <div style={{maxWidth: width, maxHeight: height, flexGrow:1}}>
-            <Line data={plotData} options={config.plotConfig}/>
+            <Line data={plotData} options={plotOptions}/>
         </div>
     )
 }

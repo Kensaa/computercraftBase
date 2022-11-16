@@ -1,6 +1,6 @@
 import create from 'zustand'
 
-const address = 'http://192.168.194.69:3695'
+const address = 'http://localhost:3695'
 const maxSlectedClient = 4
 const fetchOptions = {
     method: 'GET',

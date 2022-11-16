@@ -32,7 +32,8 @@ interface Client {
     }
     connected: boolean
 }
-export default function Graph({ input }: GraphProps) {
+
+export default function TimeGraph({ input }: GraphProps) {
     const config = configStore(state => ({ ...state }))
     const [ids, setIds] = useState<string[]>([])
     const [clients, setClients] = useState<Client[]>([])
@@ -81,20 +82,10 @@ export default function Graph({ input }: GraphProps) {
                     const client = clients.find(e => e.id === data.identifier)
                     if(!client) return ''
                     const keys = client.dataType.keys
-                    return <Plot key={i} data={data.data} keys={keys} width='45%' height='50%'/>
+                    return <Plot key={i} data={data.data} keys={keys} width='45%' height='50%' name={client.id}/>
                 })}
             </div>
         </div>
 
     )
 }
-
-/*                {
-                    /*data.map((data,i) => {
-                        const client = clients.find(e => e.id === data.identifier)
-                        if(!client) return ''
-                        const keys = client.dataType.keys
-                        return <Plot key={i} data={data.data} keys={keys}/>
-                    })
-                    <Plot data={data[0].data} keys={clients[0].dataType.keys}/>
-                }*/
