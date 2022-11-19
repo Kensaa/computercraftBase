@@ -121,59 +121,8 @@ function generateAuthToken(user: {id: number, username: string}) {
         *   This endpoint is used to fetch all clients
         */
         const clients = await sql.getClients(database)
-        const preparedClients = clients.map(client => ({id: client.id, clientType: client.clientType, dataType: JSON.parse(client.dataType), connected: client.connected}))
-        res.status(200).json(preparedClients)
-    })
-
-    expressServer.post('/api/client/list', authenticateJWT, async (req: Request, res: Response) => {
-        /*
-        *   This endpoint is used to list the data available in the database
-        body: {
-            dataType?: [data type passed by the client when it registered itself]
-            clientType?: [client type passed by the client when it registered itself]
-        }*/
-        const { dataType, clientType } = req.body
-            
-        if(dataType && clientType) return res.status(400).send('cannot specify both dataType and clientType')
-        if(!(dataType || clientType)) return res.status(400).send('must specify either dataType or clientType')
-
-        if(dataType){
-            // Fetch all clients
-            const clients = await sql.getClients(database)
-            
-            // Filter clients based on dataType
-            const filteredClients = clients.filter(client => JSON.parse(client.dataType).type === dataType)
-            if(filteredClients.length === 0){
-                return res.status(404).send('no client found')
-            }
-            const preparedData = filteredClients.map(client => (
-                {
-                    id: client.id,
-                    clientType: client.clientType,
-                    dataType: JSON.parse(client.dataType),
-                    connected: client.connected
-                }
-            ))
-            res.status(200).json(preparedData)
-        }
-        if(clientType){
-            // Fetch all clients
-            const clients = await sql.getClients(database)
-            
-            // Filter clients based on clientType
-            const filteredClients = clients.filter(client => client.clientType === clientType)
-            if(filteredClients.length === 0){
-                return res.status(404).send('no client found')
-            }
-            const preparedData = filteredClients.map(client => (
-                {
-                    id: client.id,
-                    clientType: client.clientType,
-                    dataType: JSON.parse(client.dataType)
-                }
-            ))
-            res.status(200).json(preparedData)
-        }
+        const preparedData = clients.map(client => ({id: client.id, clientType: client.clientType, dataType: JSON.parse(client.dataType), connected: client.connected}))
+        res.status(200).json(preparedData)
     })
 
     expressServer.post('/api/client/get', authenticateJWT, async (req: Request, res: Response) => {
@@ -191,7 +140,7 @@ function generateAuthToken(user: {id: number, username: string}) {
         
         const clients = await sql.getClients(database)
         const filteredClients = clients.filter(client => query.includes(client.id))
-        const preparedData = filteredClients.map(client => ({...client, dataType: JSON.parse(client.dataType)}))
+        const preparedData = filteredClients.map(client => ({id: client.id, clientType: client.clientType, dataType: JSON.parse(client.dataType), connected: client.connected}))
 
         res.status(200).json(preparedData)
     })
@@ -226,7 +175,7 @@ function generateAuthToken(user: {id: number, username: string}) {
         res.status(200).send('action sent')
     })
 
-    expressServer.post('/api/user/register', async (req: Request, res: Response) => {
+    expressServer.post('/api/user/register', authenticateJWT, async (req: Request, res: Response) => {
         /*
         *   This endpoint is used to register a user
         body: {
@@ -295,4 +244,63 @@ function generateAuthToken(user: {id: number, username: string}) {
             username: user.username
         })
     })
+
+    expressServer.get('/api/group/all', authenticateJWT, async (req: Request, res: Response) => {
+        /*
+        *   This endpoint is used to get all groups
+        */
+        const groups = await sql.getGroups(database)
+        if(!groups) return res.status(404).send('groups not found')
+        const preparedData = groups.map(group => ({id: group.id, members: JSON.parse(group.members)}))
+        res.status(200).json(preparedData)
+    })
+
+    expressServer.post('/api/group/get', authenticateJWT, async (req: Request, res: Response) => {
+        /*
+        *   This endpoint is used to get one or multiple groups
+        body: {
+            query: [
+                identifier: [identifier of the group]
+            ]
+        }*/
+        const { query } = req.body
+
+        if(!query) return res.status(400).send('query not provided')
+        if(query.length === 0) return res.status(400).send('query is empty')
+
+        const groups = await sql.getGroups(database)
+        if(!groups) return res.status(404).send('groups not found')
+
+        const filteredGroups = groups.filter(group => query.includes(group.id))
+        const preparedData = filteredGroups.map(group => ({id: group.id, members: JSON.parse(group.members)}))
+
+        res.status(200).json(preparedData)
+    })
+
+    expressServer.post('/api/group/create', authenticateJWT, async (req: Request, res: Response) => {
+        /*
+        *   This endpoint is used to create a group
+        body: {
+            id: [identifier of the group],
+            members: [
+                identifier: [identifier of the client]
+            ]
+        }*/
+        const { name, members } = req.body
+
+        if(!name) return res.status(400).send('name not provided')
+        if(!members) return res.status(400).send('members not provided')
+        if(members.length === 0) return res.status(400).send('members is empty')
+        
+        const clients = await sql.getClients(database)
+        if(!clients) return res.status(404).send('clients not found')
+
+        const filteredClients = clients.filter(client => members.includes(client.id))
+        if(filteredClients.length !== members.length) return res.status(404).send('some clients not found')
+
+        await sql.addGroup(database, name, JSON.stringify(members))
+
+        res.status(200).send('group created')
+    })
+
 })()

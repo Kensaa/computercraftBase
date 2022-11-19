@@ -1,6 +1,6 @@
 import { Database } from 'sqlite3'
 import { promisify } from 'util'
-import { Client, InstantData, TimeData, User } from './type'
+import { Client, Group, InstantData, TimeData, User } from './type'
 
 const MAXLENGTH = 1000
 
@@ -33,6 +33,12 @@ export async function loadDatabase(
         dataType TEXT NOT NULL,
         connected INTEGER NOT NULL
     );`)
+
+    await db.runAsync(`CREATE TABLE IF NOT EXISTS Groups (
+        dbid INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL UNIQUE,
+        id TEXT NOT NULL,
+        content TEXT NOT NULL
+    )`)
 
     await db.runAsync(`CREATE TABLE IF NOT EXISTS TimeData (
         id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL UNIQUE,
@@ -111,6 +117,53 @@ export async function setClientConnected(
 ) : Promise<void> {
     await database.runAsync('UPDATE Clients SET connected = ? WHERE id = ?', connected, id)
 }
+
+// ------------------------------------------------------------------------------------------------------------------------ \\
+
+export async function getGroup(
+    db: AsyncDatabase,
+    dbid: Group['dbid']
+) : Promise<Group> {
+    const result = await db.getAsync('SELECT * FROM Groups WHERE dbid = ?', dbid) as Group
+    return result
+}
+
+export async function getGroups(
+    db: AsyncDatabase
+) : Promise<Group[]> {
+    const result = await db.allAsync('SELECT * FROM Groups') as Group[]
+    return result
+}
+
+export async function groupExists(
+    db: AsyncDatabase,
+    id: Group['id']
+) : Promise<boolean> {
+    const result = await db.allAsync('SELECT * FROM Groups WHERE id= ?', id) as Group[]
+    return result.length > 0
+}
+
+export async function getGroupWithIdentifier(
+    db: AsyncDatabase,
+    id: Group['id']
+) : Promise<Group> {
+    const result = await db.getAsync('SELECT * FROM Groups WHERE id = ?', id) as Group
+    return result
+}
+
+export async function addGroup(
+    db: AsyncDatabase,
+    id: Group['id'],
+    members: Group['members']
+) : Promise<number> {
+    await db.runAsync('INSERT INTO Groups (id, members) VALUES (?,?)',
+        id,
+        members
+    )
+    const dbid = (await db.getAsync('SELECT id FROM Groups ORDER BY dbid DESC LIMIT 1') as { dbid: number }).dbid
+    return dbid
+}
+
 
 // ------------------------------------------------------------------------------------------------------------------------ \\
 

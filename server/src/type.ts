@@ -70,3 +70,9 @@ export interface User {
     username: string,
     password: string
 }
+
+export interface Group {
+    dbid?: number,
+    id: string,
+    members: string
+}
