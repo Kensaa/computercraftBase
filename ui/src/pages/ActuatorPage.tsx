@@ -7,22 +7,10 @@ import AppNavbar from '../components/AppNavbar'
 import Actuator from '../components/Actuator'
 
 import { queryFetch } from '../utils'
+import { Client } from '../types'
 
 interface ActuatorProps {
     input: string
-}
-
-interface Client {
-    dbid: number
-    id: string
-    clientType: string
-    dataType: {
-        type: string
-        unit: string
-        keys: string[]
-        actions?: string[]
-    }
-    connected: boolean
 }
 
 export default function ActuatorPage({ input }: ActuatorProps) {

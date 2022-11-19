@@ -3,19 +3,7 @@ import { Button, ListGroup } from 'react-bootstrap'
 
 import authStore from '../stores/auth'
 import configStore from '../stores/config'
-
-interface Client {
-    dbid: number
-    id: string
-    clientType: string
-    dataType: {
-        type: string
-        unit: string
-        keys: string[]
-        actions?: string[]
-    }
-    connected: boolean
-}
+import { Client } from '../types'
 
 interface ActuatorProps {
     client: Client

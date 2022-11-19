@@ -8,6 +8,8 @@ import authStore from '../stores/auth'
 import Plot from '../components/Plot'
 import { queryFetch } from '../utils'
 
+import { Client } from '../types'
+
 interface GraphProps {
   input: string
 }
@@ -16,21 +18,10 @@ interface Data {
     identifier:string
     data: DataPoint[]
 }
+
 interface DataPoint {
     data: Record<string,any>
     time:string
-}
-
-interface Client {
-    dbid: number
-    id: string
-    clientType: string
-    dataType: {
-        type: string
-        unit: string
-        keys: string[]
-    }
-    connected: boolean
 }
 
 export default function TimeGraph({ input }: GraphProps) {

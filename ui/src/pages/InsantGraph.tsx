@@ -6,20 +6,10 @@ import AppNavbar from '../components/AppNavbar'
 
 import { queryFetch } from '../utils'
 
+import { Client } from '../types'
+
 interface GraphProps {
     input: string
-}
-
-interface Client {
-    dbid: number
-    id: string
-    clientType: string
-    dataType: {
-        type: string
-        unit: string
-        keys: string[]
-    }
-    connected: boolean
 }
 
 export default function InsantGraph({ input }: GraphProps) {

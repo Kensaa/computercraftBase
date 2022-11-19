@@ -5,13 +5,7 @@ import { useLocation } from 'wouter'
 
 import authStore from '../stores/auth'
 import configStore from '../stores/config'
- 
-interface Client {
-    id: string
-    clientType: string
-    dataType:string
-    connected:boolean
-}
+import { Client } from '../types'
 
 export default function Home() {
     const [, setLocation] = useLocation()
@@ -30,9 +24,7 @@ export default function Home() {
             method: 'GET',
             headers: { 'Authorization': `Bearer ${token}` }
         }).then(res => res.json()).then(res => {
-            const p = res.map((e:any) => ({...e, dataType: e.dataType.type}))
-            setClients(p)
-            //setShownClients(p)
+            setClients(res)
         })
     },[config.address, token])
     
@@ -51,7 +43,7 @@ export default function Home() {
                     after.push(client)
                     continue
                 }
-                if(client.dataType.toLowerCase().includes(searchValue.toLowerCase())){
+                if(client.dataType.type.toLowerCase().includes(searchValue.toLowerCase())){
                     after.push(client)
                     continue
                 }
@@ -111,9 +103,9 @@ export default function Home() {
 
                                 
                                 return(
-                                <tr style={style} className="user-select-none" key={i} onClick={() => {if(!disabled)clientClicked(i)}}>
+                                <tr style={style} className="user-select-none" key={i} onClick={() => {if(!disabled) clientClicked(i)}}>
                                     <td>{client.id}</td>
-                                    <td>{client.dataType}</td>
+                                    <td>{client.dataType.type}</td>
                                     <td>{client.clientType === 'time-based grapher' ? 'Time-based' : (client.clientType === 'instant grapher' ? 'Instant' : 'Actuator')}</td>
                                     <td>{client.connected ? 'Yes' : 'No'}</td>
                                 </tr>
