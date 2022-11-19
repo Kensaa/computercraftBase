@@ -28,7 +28,7 @@ export default function Home() {
     useEffect(() => {
         fetch(`${config.address}/api/client/all`, {
             method: 'GET',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }
+            headers: { 'Authorization': `Bearer ${token}` }
         }).then(res => res.json()).then(res => {
             const p = res.map((e:any) => ({...e, dataType: e.dataType.type}))
             setClients(p)

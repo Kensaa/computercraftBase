@@ -6,7 +6,7 @@ import { useInterval } from 'usehooks-ts'
 import configStore from '../stores/config'
 import authStore from '../stores/auth'
 import Plot from '../components/visualisers/Plot'
-import { throws } from 'assert'
+import { queryFetch } from '../utils'
 
 interface GraphProps {
   input: string
@@ -48,11 +48,12 @@ export default function TimeGraph({ input }: GraphProps) {
     useEffect(() => {
         if(ids.length === 0) return
 
-        fetch(`${config.address}/api/client/get`,{
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-            body: JSON.stringify({ query: ids })
-        }).then(res => {
+        queryFetch(
+            `${config.address}/api/client/get`, 
+            { method: 'GET', headers: { 'Authorization': `Bearer ${token}` }},
+            { query: JSON.stringify(ids) }
+        )
+        .then(res => {
             if(res.status === 200) return res.json()
             throw new Error('error while fetching clients infos')
         }).then(data => setClients(data))
@@ -60,11 +61,13 @@ export default function TimeGraph({ input }: GraphProps) {
 
     useInterval(() => {
         if(clients.length === 0) return
-        fetch(`${config.address}/api/client/fetch`,{
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-            body: JSON.stringify({ query: clients.map(e => e.id) })
-        }).then(res => {
+
+        queryFetch(
+            `${config.address}/api/client/fetch`,
+            { method: 'GET', headers: { 'Authorization': `Bearer ${token}` }},
+            { query: JSON.stringify(clients.map(e => e.id)) }
+        )
+        .then(res => {
             if(res.status === 200) return res.json()
             throw new Error('error while fetching data')
         }).then(data => setData(data))

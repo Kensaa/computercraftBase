@@ -81,19 +81,29 @@ function generateAuthToken(user: {id: number, username: string}) {
         })
     })
 
-    expressServer.post('/api/client/fetch', authenticateJWT, async (req: Request, res: Response) => {
+    expressServer.get('/api/client/fetch', authenticateJWT, async (req: Request, res: Response) => {
         /*
         *   This endpoint is used to fetch data from the database
-        body: {
+        query: {
             query: [
                 '[identifier]',
             ],
             count: number
         }*/
-        const { query, number } = req.body
+        const { query: queryStr, count: countStr } = req.query
 
-        if(!query) return res.status(400).send('query not provided')
+        if(!queryStr) return res.status(400).send('query not provided')
+        if(typeof queryStr !== 'string') return res.status(400).send('query is not an array')
+        const query: string[] = JSON.parse(queryStr)
         if(query.length === 0) return res.status(400).send('query is empty')
+
+        let number = undefined
+        
+        if(countStr) {
+            if(typeof countStr !== 'string') return res.status(400).send('number is not a string')
+            number = parseInt(countStr)
+            if(isNaN(number)) return res.status(400).send('number is not a number')
+        }
 
         const queryResponses = []
         for(const identifier of query){
@@ -125,7 +135,7 @@ function generateAuthToken(user: {id: number, username: string}) {
         res.status(200).json(preparedData)
     })
 
-    expressServer.post('/api/client/get', authenticateJWT, async (req: Request, res: Response) => {
+    expressServer.get('/api/client/get', authenticateJWT, async (req: Request, res: Response) => {
         /*
         *   This endpoint is used to fetch one or multiple clients
         body: {
@@ -133,9 +143,11 @@ function generateAuthToken(user: {id: number, username: string}) {
                 identifier: [identifier of the client]
             ]
         }*/
-        const { query } = req.body
+        const { query: queryStr } = req.query
 
-        if(!query) return res.status(400).send('query not provided')
+        if(!queryStr) return res.status(400).send('query not provided')
+        if(typeof queryStr !== 'string') return res.status(400).send('query is not an array')
+        const query: string[] = JSON.parse(queryStr)
         if(query.length === 0) return res.status(400).send('query is empty')
         
         const clients = await sql.getClients(database)
@@ -255,7 +267,7 @@ function generateAuthToken(user: {id: number, username: string}) {
         res.status(200).json(preparedData)
     })
 
-    expressServer.post('/api/group/get', authenticateJWT, async (req: Request, res: Response) => {
+    expressServer.get('/api/group/get', authenticateJWT, async (req: Request, res: Response) => {
         /*
         *   This endpoint is used to get one or multiple groups
         body: {
@@ -263,9 +275,11 @@ function generateAuthToken(user: {id: number, username: string}) {
                 identifier: [identifier of the group]
             ]
         }*/
-        const { query } = req.body
+        const { query: queryStr } = req.query
 
-        if(!query) return res.status(400).send('query not provided')
+        if(!queryStr) return res.status(400).send('query not provided')
+        if(typeof queryStr !== 'string') return res.status(400).send('query is not an array')
+        const query: string[] = JSON.parse(queryStr)
         if(query.length === 0) return res.status(400).send('query is empty')
 
         const groups = await sql.getGroups(database)

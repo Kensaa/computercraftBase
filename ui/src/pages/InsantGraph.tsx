@@ -4,6 +4,8 @@ import configStore from '../stores/config'
 import authStore from '../stores/auth'
 import AppNavbar from '../components/AppNavbar'
 
+import { queryFetch } from '../utils'
+
 interface GraphProps {
     input: string
 }
@@ -34,11 +36,12 @@ export default function InsantGraph({ input }: GraphProps) {
     useEffect(() => {
         if(ids.length === 0) return
 
-        fetch(`${config.address}/api/client/get`,{
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-            body: JSON.stringify({ query: ids })
-        }).then(res => {
+        queryFetch(
+            `${config.address}/api/client/get`, 
+            { method: 'GET', headers: { 'Authorization': `Bearer ${token}` }},
+            { query: JSON.stringify(ids) }
+        )
+        .then(res => {
             if(res.status === 200) return res.json()
             throw new Error('error while fetching clients infos')
         }).then(data => setClients(data))
