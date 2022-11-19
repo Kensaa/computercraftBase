@@ -31,7 +31,8 @@ export async function loadDatabase(
         id TEXT NOT NULL,
         clientType TEXT NOT NULL,
         dataType TEXT NOT NULL,
-        connected INTEGER NOT NULL
+        connected INTEGER NOT NULL,
+        hidden INTEGER NOT NULL
     );`)
 
     await db.runAsync(`CREATE TABLE IF NOT EXISTS Groups (
@@ -98,13 +99,15 @@ export async function addClient(
     id: Client['id'],
     clientType: Client['clientType'],
     dataType: Client['dataType'],
-    connected: Client['connected'] = true
+    connected: Client['connected'] = true,
+    hidden: Client['hidden'] = false
     ) : Promise<number> {
-    await db.runAsync('INSERT INTO Clients (id, clientType, dataType, connected) VALUES (?,?,?,?)',
+    await db.runAsync('INSERT INTO Clients (id, clientType, dataType, connected, hidden) VALUES (?,?,?,?,?)',
         id,
         clientType,
         dataType,
-        connected
+        connected,
+        hidden
     )
     const dbid = (await db.getAsync('SELECT id FROM Clients ORDER BY dbid DESC LIMIT 1') as { dbid: number }).dbid
     return dbid

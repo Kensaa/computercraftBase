@@ -14,6 +14,7 @@ export interface Client {
     used to further specify the type of data the client sends and to allow ui to fetch it according to the type of the data
     */
     connected: boolean // Whether the client is connected or not
+    hidden: boolean // Whether the client is hidden or not
 }
 
 // Interface representing every message sent through websocket by the client
@@ -30,7 +31,8 @@ export interface RegisterPayload {
         type: string,
         unit: string
         keys: string[]
-    }
+    },
+    hidden?: boolean
 }
 
 // Interface representing the payload sent by the client when it sends data

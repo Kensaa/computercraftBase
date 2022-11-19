@@ -50,16 +50,24 @@ function generateAuthToken(user: {id: number, username: string}) {
             if(message.action === 'register'){
                 const payload: RegisterPayload = message.payload
                 if(clients.find(client => client.id === payload.id)){
-                    ws.close()
-                }else{
-                    clients.push({...payload, websocket: ws, dataType: JSON.stringify(payload.dataType), connected: true})
-                    if(await sql.clientExists(database, payload.id)){
-                        sql.setClientConnected(database, payload.id, true)
-                    }else{
-                        sql.addClient(database, payload.id, payload.clientType, JSON.stringify(payload.dataType), true)
-                    }
-                    console.log(`client "${payload.id}" connected (type : ${payload.clientType})`)
+                    return ws.close()
                 }
+                let hidden = false
+                if(payload.hidden) hidden = payload.hidden
+
+                clients.push({...payload, websocket: ws, dataType: JSON.stringify(payload.dataType), connected: true, hidden})
+
+                // Update database with connected Client
+                if(await sql.clientExists(database, payload.id)){
+                    // If client already exists, update it
+                    sql.setClientConnected(database, payload.id, true)
+                }else{
+                    // If client doesn't exist, create it
+                    sql.addClient(database, payload.id, payload.clientType, JSON.stringify(payload.dataType), true, hidden)
+                }
+
+                console.log(`client "${payload.id}" connected (type : ${payload.clientType})`)
+                
             }else if(message.action === 'data'){
                 const payload: DataPayload = message.payload
                 const client = clients.find(client => client.websocket === ws)
@@ -73,10 +81,10 @@ function generateAuthToken(user: {id: number, username: string}) {
             }
         })
         ws.on('close',async ()=>{
-            const client = clients.find(c=>c.websocket===ws)
-            if(!client)return
+            const client = clients.find(c => c.websocket === ws)
+            if(!client) return
             console.log(`unregistering client with identifier "${client.id}" and type "${client.clientType}"`)
-            clients = clients.filter(c=>c.websocket!==ws)
+            clients = clients.filter(c => c.websocket !== ws)
             sql.setClientConnected(database, client.id, false)
         })
     })
@@ -131,7 +139,7 @@ function generateAuthToken(user: {id: number, username: string}) {
         *   This endpoint is used to fetch all clients
         */
         const clients = await sql.getClients(database)
-        const preparedData = clients.map(client => ({id: client.id, clientType: client.clientType, dataType: JSON.parse(client.dataType), connected: client.connected}))
+        const preparedData = clients.map(client => ({id: client.id, clientType: client.clientType, dataType: JSON.parse(client.dataType), connected: client.connected, hidden: client.hidden}))
         res.status(200).json(preparedData)
     })
 
@@ -152,7 +160,7 @@ function generateAuthToken(user: {id: number, username: string}) {
         
         const clients = await sql.getClients(database)
         const filteredClients = clients.filter(client => query.includes(client.id))
-        const preparedData = filteredClients.map(client => ({id: client.id, clientType: client.clientType, dataType: JSON.parse(client.dataType), connected: client.connected}))
+        const preparedData = filteredClients.map(client => ({id: client.id, clientType: client.clientType, dataType: JSON.parse(client.dataType), connected: client.connected, hidden: client.hidden}))
 
         res.status(200).json(preparedData)
     })
@@ -187,7 +195,7 @@ function generateAuthToken(user: {id: number, username: string}) {
         res.status(200).send('action sent')
     })
 
-    expressServer.post('/api/user/register', authenticateJWT, async (req: Request, res: Response) => {
+    expressServer.post('/api/user/register', async (req: Request, res: Response) => {
         /*
         *   This endpoint is used to register a user
         body: {

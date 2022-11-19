@@ -9,4 +9,5 @@ export interface Client {
         actions?: string[]
     }
     connected: boolean
+    hidden: boolean
 }

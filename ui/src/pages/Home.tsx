@@ -10,7 +10,8 @@ import { Client } from '../types'
 export default function Home() {
     const [, setLocation] = useLocation()
     const [searchValue, setSearchValue] = useState('');
-    const [connectedClientFilter, setConnectedClientFilter] = useState(true)
+    const [onlyShowConnected, setOnlyShowConnected] = useState(true)
+    const [showHidden, setShowHidden] = useState(false)
 
     const config = configStore(state => ({...state}))
     const token = authStore(state => state.token)
@@ -31,8 +32,11 @@ export default function Home() {
     useEffect(() => {
         setSelectedClient([])
         let before = clients
-        if(connectedClientFilter) {
-            before = before.filter((e:any) => e.connected)
+        if(onlyShowConnected) {
+            before = before.filter((e: any) => e.connected)
+        }
+        if(!showHidden){
+            before = before.filter((e: any) => !e.hidden)
         }
         if (searchValue.length === 0) {
             setShownClients(before)
@@ -53,7 +57,7 @@ export default function Home() {
             }
             setShownClients(after)
         }
-    }, [clients, searchValue, connectedClientFilter])
+    }, [clients, searchValue, onlyShowConnected, showHidden])
     
     const clientClicked = (index: number) => {
         if(selectedClient.includes(index)){
@@ -76,7 +80,10 @@ export default function Home() {
             <Container fluid className='m-0 mt-3 p-0 h-100 w-100 d-flex flex-column align-items-center'>
                 <div className='h-100 w-75 d-flex flex-column align-items-center'>
                     <Form.Control value={searchValue} onChange={e => setSearchValue(e.target.value)} className='' placeholder='Search for a client' />
-                    <Form.Check type='checkbox' checked={connectedClientFilter} onChange={e => setConnectedClientFilter(e.target.checked)} label="Only show connected client"/>
+                    <div>
+                        <Form.Check type='checkbox' checked={onlyShowConnected} onChange={e => setOnlyShowConnected(e.target.checked)} label="Only show connected client"/>
+                        <Form.Check type='checkbox' checked={showHidden} onChange={e => setShowHidden(e.target.checked)} label="Show hidden client"/>
+                    </div>
                     <Table className="mt-2" bordered hover>
                         <thead>
                             <tr className="user-select-none">
