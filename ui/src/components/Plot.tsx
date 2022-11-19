@@ -23,7 +23,7 @@ ChartJS.register(
     Legend,
     ArcElement
 )
-import configStore from '../../stores/config'
+import configStore from '../stores/config'
 
 interface PlotProps{
     data: DataPoint[]

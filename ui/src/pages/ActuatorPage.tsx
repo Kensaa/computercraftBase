@@ -4,6 +4,7 @@ import { ListGroup, Button } from 'react-bootstrap'
 import configStore from '../stores/config'
 import authStore from '../stores/auth'
 import AppNavbar from '../components/AppNavbar'
+import Actuator from '../components/Actuator'
 
 import { queryFetch } from '../utils'
 
@@ -24,7 +25,7 @@ interface Client {
     connected: boolean
 }
 
-export default function Actuator({ input }: ActuatorProps) {
+export default function ActuatorPage({ input }: ActuatorProps) {
     const config = configStore(state => ({ ...state }))
     const token = authStore(state => state.token)
     const [ids, setIds] = useState<string[]>([])
@@ -49,50 +50,16 @@ export default function Actuator({ input }: ActuatorProps) {
         }).then(data => setClients(data))
     }, [ids])
 
+
     return (
         <div className='w-100 h-100 d-flex flex-column'>
             <AppNavbar />
             <div className="w-100 h-100 d-flex flex-row flex-wrap justify-content-center">
                 {clients.map((client, clientI) => (
-                    <Client key={clientI} client={client}/>
+                    <Actuator key={clientI} client={client} width="30%" height="40%"/>
                 ))}
             </div>
         </div>
     )
 }
 
-function Client({ client }: { client: Client }) {
-    const [selected, setSelected] = useState<number>()
-    const token = authStore(state => state.token)
-    const config = configStore(state => ({ ...state }))
-
-    const onSend = () => {
-        if(selected === undefined) return
-        setSelected(undefined)
-        console.log('send', selected)
-        if(!client.dataType.actions) return
-        fetch(`${config.address}/api/client/action`,
-        {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}` 
-            },
-            body: JSON.stringify({
-                identifier: client.id,
-                action: client.dataType.actions[selected]
-            })
-        })
-    }
-
-    return (
-        <div className="mt-3 flex-grow">
-           <ListGroup>
-                {client.dataType.actions?.map((action, actionI) => (
-                    <ListGroup.Item className="user-select-none" active={selected === actionI} onClick={() => setSelected(actionI)} key={actionI}>{action}</ListGroup.Item>
-                ))}
-            </ListGroup>
-            <Button disabled={selected === undefined} className="mt-3" onClick={onSend}>Send</Button>
-        </div>
-    )
-}

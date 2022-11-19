@@ -5,7 +5,7 @@ import { useInterval } from 'usehooks-ts'
 
 import configStore from '../stores/config'
 import authStore from '../stores/auth'
-import Plot from '../components/visualisers/Plot'
+import Plot from '../components/Plot'
 import { queryFetch } from '../utils'
 
 interface GraphProps {
