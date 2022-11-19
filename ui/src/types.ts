@@ -6,6 +6,7 @@ export interface Client {
         type: string
         unit: string
         keys: string[]
+        actions?: string[]
     }
     connected: boolean
 }
