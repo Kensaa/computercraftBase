@@ -146,7 +146,7 @@ function generateAuthToken(user: {id: number, username: string}) {
     expressServer.get('/api/client/get', authenticateJWT, async (req: Request, res: Response) => {
         /*
         *   This endpoint is used to fetch one or multiple clients
-        body: {
+        query: {
             query: [
                 identifier: [identifier of the client]
             ]
@@ -278,7 +278,7 @@ function generateAuthToken(user: {id: number, username: string}) {
     expressServer.get('/api/group/get', authenticateJWT, async (req: Request, res: Response) => {
         /*
         *   This endpoint is used to get one or multiple groups
-        body: {
+        query: {
             query: [
                 identifier: [identifier of the group]
             ]
@@ -308,9 +308,9 @@ function generateAuthToken(user: {id: number, username: string}) {
                 identifier: [identifier of the client]
             ]
         }*/
-        const { name, members } = req.body
+        const { id, members } = req.body
 
-        if(!name) return res.status(400).send('name not provided')
+        if(!id) return res.status(400).send('id not provided')
         if(!members) return res.status(400).send('members not provided')
         if(members.length === 0) return res.status(400).send('members is empty')
         
@@ -320,7 +320,7 @@ function generateAuthToken(user: {id: number, username: string}) {
         const filteredClients = clients.filter(client => members.includes(client.id))
         if(filteredClients.length !== members.length) return res.status(404).send('some clients not found')
 
-        await sql.addGroup(database, name, JSON.stringify(members))
+        await sql.addGroup(database, id, JSON.stringify(members))
 
         res.status(200).send('group created')
     })

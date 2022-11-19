@@ -38,7 +38,7 @@ export async function loadDatabase(
     await db.runAsync(`CREATE TABLE IF NOT EXISTS Groups (
         dbid INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL UNIQUE,
         id TEXT NOT NULL,
-        content TEXT NOT NULL
+        members TEXT NOT NULL
     )`)
 
     await db.runAsync(`CREATE TABLE IF NOT EXISTS TimeData (
