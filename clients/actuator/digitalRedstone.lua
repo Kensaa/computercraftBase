@@ -8,10 +8,26 @@ end
 local clientType = "actuator"
 local clientName = "redstone1"
 
-local dataType = '{"type":"digitalRedstone","unit":"","keys":[],"actions":["on","off"]}'
+local dataType = {
+    "type"="digitalRedstone",
+    "unit"="",
+    "keys"= {
+    },
+    "actions"= {
+        "on",
+        "off"
+    }
+}
 
-local registerMsg = '{"action":"register","payload":{"id":"'..clientName..'","clientType":"'..clientType..'","dataType":'..dataType..'}}'
-ws.send(registerMsg)
+local registerMsg = {
+    "action"="register",
+    "payload"= {
+        "id"=clientName,
+        "clientType"=clientType,
+        "dataType"=dataType
+    }
+}
+ws.send(textutils.serializeJSON(registerMsg))
  
 while true do
     local _, url, response, isBinary = os.pullEvent("websocket_message")

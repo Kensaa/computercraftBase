@@ -8,10 +8,26 @@ end
 local clientType = "time-based grapher"
 local clientName = "Energie Base 2"
 
-local dataType = '{"type":"energy storage","unit":"FE","keys":["energy","capacity"]}'
+--local dataType = '{"type":"energy storage","unit":"FE","keys":["energy","capacity"]}'
+local dataType = {
+    "type"="energy storage",
+    "unit"="FE",
+    "keys"= {
+        "energy",
+        "capacity"
+    }
+}
 
-local registerMsg = '{"action":"register","payload":{"id":"'..clientName..'","clientType":"'..clientType..'","dataType":'..dataType..'}}'
-ws.send(registerMsg)
+--local registerMsg = '{"action":"register","payload":{"id":"'..clientName..'","clientType":"'..clientType..'","dataType":'..dataType..'}}'
+local registerMsg = {
+    "action"="register",
+    "payload"= {
+        "id"=clientName,
+        "clientType"=clientType,
+        "dataType"=dataType
+    }
+}
+ws.send(textutils.serializeJSON(registerMsg))
 
 
 local cube = peripheral.wrap("back")
@@ -21,6 +37,16 @@ while true do
     local storage = cube.getEnergy()*0.4
     local maxStorage = cube.getMaxEnergy()*0.4
 
-    ws.send('{"action":"data","payload":{"data":{"energy":'..storage..',"capacity":'..maxStorage..'}}}')
+    local dataMsg = {
+        "action"="data",
+        "payload"= {
+            "data"= {
+                "energy"=storage,
+                "capacity"=maxStorage
+            }
+        }
+    }
+
+    ws.send(textutils.serializeJSON(dataMsg))
     sleep(1)
 end

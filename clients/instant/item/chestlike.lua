@@ -8,10 +8,25 @@ end
 local clientType = "instant grapher"
 local clientName = "chest1"
 
-local dataType = '{"type":"chest","unit":"","keys":["storage","capacity","items"]}'
+local dataType = {
+    "type"="chest",
+    "unit"="",
+    "keys"= {
+        "storage",
+        "capacity",
+        "items"
+    }
+}
 
-local registerMsg = '{"action":"register","payload":{"id":"'..clientName..'","clientType":"'..clientType..'","dataType":'..dataType..'}}'
-ws.send(registerMsg)
+local registerMsg = {
+    "action"="register",
+    "payload"= {
+        "id"=clientName,
+        "clientType"=clientType,
+        "dataType"=dataType
+    }
+}
+ws.send(textutils.serializeJSON(registerMsg))
 
 local chest = peripheral.wrap('back')
 

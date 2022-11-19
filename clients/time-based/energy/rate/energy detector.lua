@@ -8,10 +8,24 @@ end
 local clientType = "time-based grapher"
 local clientName = "Base Prod"
 
-local dataType = '{"type":"energy rate","unit":"FE","keys":["rate"]}'
+local dataType = {
+    "type"="energy rate",
+    "unit"="FE",
+    "keys"= {
+        "rate"
+    }
+}
 
-local registerMsg = '{"action":"register","payload":{"id":"'..clientName..'","clientType":"'..clientType..'","dataType":'..dataType..'}}'
-ws.send(registerMsg)
+local registerMsg = {
+    "action"="register",
+    "payload"= {
+        "id"=clientName,
+        "clientType"=clientType,
+        "dataType"=dataType
+    }
+}
+
+ws.send(textutils.serializeJSON(registerMsg))
 
 
 local energyDetector = peripheral.wrap('back')
@@ -19,7 +33,14 @@ local energyDetector = peripheral.wrap('back')
 
 while true do
     local rate = energyDetector.getTransferRate()
-
-    ws.send('{"action":"data","payload":{"data":{"rate":'..rate..'}}}')
+    local dataMsg = {
+        "action"="data",
+        "payload"= {
+            "data"= {
+                "rate"=rate
+            }
+        }
+    }
+    ws.send(textutils.serializeJSON(dataMsg))
     sleep(1)
 end

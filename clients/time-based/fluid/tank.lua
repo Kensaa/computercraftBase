@@ -8,11 +8,25 @@ end
 local clientType = "time-based grapher"
 local clientName = "Tank 1"
 
-local dataType = '{"type":"fluid storage","unit":"mb","keys":["storage","capacity"]}'
+local dataType = {
+    "type"="fluid storage",
+    "unit"="mb",
+    "keys"= {
+        "storage",
+        "capacity"
+    }
+}
 
-local registerMsg = '{"action":"register","payload":{"id":"'..clientName..'","clientType":"'..clientType..'","dataType":'..dataType..'}}'
-ws.send(registerMsg)
 
+local registerMsg = {
+    "action"="register",
+    "payload"= {
+        "id"=clientName,
+        "clientType"=clientType,
+        "dataType"=dataType
+    }
+}
+ws.send(textutils.serializeJSON(registerMsg))
 
 local tank = peripheral.wrap('back')
 
@@ -20,6 +34,16 @@ while true do
     local storage = tank.getStored().amount
     local capacity = tank.getCapacity()
 
-    ws.send('{"action":"data","payload":{"data":{"storage":'..storage..',"capacity":'..capacity..'}}}')
+    local dataMsg = {
+        "action"="data",
+        "payload"= {
+            "data"= {
+                "storage"=storage,
+                "capacity"=capacity
+            }
+        }
+    }
+
+    ws.send(textutils.serializeJSON(dataMsg))
     sleep(1)
 end

@@ -8,11 +8,27 @@ end
 local clientType = "time-based grapher"
 local clientName = "Energie Base"
 
-local dataType = '{"type":"induction matrix","unit":"FE","keys":["energy","capacity","inputRate","outputRate"]}'
 
-local registerMsg = '{"action":"register","payload":{"id":"'..clientName..'","clientType":"'..clientType..'","dataType":'..dataType..'}}'
-ws.send(registerMsg)
+local dataType = {
+    "type"="induction matrix",
+    "unit"="FE",
+    "keys"= {
+        "energy",
+        "capacity",
+        "inputRate",
+        "outputRate"
+    }
+}
 
+local registerMsg = {
+    "action"="register",
+    "payload"= {
+        "id"=clientName,
+        "clientType"=clientType,
+        "dataType"=dataType
+    }
+}
+ws.send(textutils.serializeJSON(registerMsg))
 
 local induction = peripheral.wrap('back')
 
@@ -23,6 +39,17 @@ while true do
     local inputRate = induction.getLastInput()*0.4
     local outputRate = induction.getLastOutput()*0.4
 
-    ws.send('{"action":"data","payload":{"data":{"energy":'..storage..',"capacity":'..maxStorage..',"inputRate":'..inputRate..',"outputRate":'..outputRate..'}}}')
+    local dataMsg = {
+        "action"="data",
+        "payload"= {
+            "data"= {
+                "energy"=storage,
+                "capacity"=maxStorage,
+                "inputRate"=inputRate,
+                "outputRate"=outputRate
+            }
+        }
+    }
+    ws.send(textutils.serializeJSON(dataMsg))
     sleep(1)
 end
