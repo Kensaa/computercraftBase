@@ -67,7 +67,19 @@ function Client({ client }: { client: Client }) {
         if(selected === undefined) return
         setSelected(undefined)
         console.log('send', selected)
-        fetch(`${config.address}/api/client/action`,{method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ identifier: client.id, action: client.dataType.actions?[selected]})})
+        if(!client.dataType.actions) return
+        fetch(`${config.address}/api/client/action`,
+        {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}` 
+            },
+            body: JSON.stringify({
+                identifier: client.id,
+                action: client.dataType.actions[selected]
+            })
+        })
     }
 
     return (

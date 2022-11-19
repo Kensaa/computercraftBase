@@ -75,7 +75,7 @@ export default function Home() {
     const onPressed = () => {
         if(selectedClient.length === 0) return
         const paramString = selectedClient.map((e) => shownClients[e].id).join(',')
-        const loc = clients[selectedClient[0]].clientType === 'time-based grapher' ? 'time' : (clients[selectedClient[0]].clientType === 'instant grapher' ? 'instant' : 'actuator')
+        const loc = shownClients[selectedClient[0]].clientType === 'time-based grapher' ? 'time' : (shownClients[selectedClient[0]].clientType === 'instant grapher' ? 'instant' : 'actuator')
         setLocation(`/client/${loc}/${paramString}`)
     }
     return (
