@@ -4,7 +4,7 @@ import * as cors from 'cors'
 import { Request, Response, NextFunction } from 'express'
 import * as sql from './sql'
 import * as jwt from 'jsonwebtoken'
-import { WSMessage, RegisterPayload, Client, DataPayload } from './type'
+import { WSMessage, RegisterPayload, Client, DataPayload, ActionMessage } from './type'
 import {randomBytes} from 'crypto'
 
 const authTokenSecret = randomBytes(64).toString('hex')
@@ -170,28 +170,32 @@ function generateAuthToken(user: {id: number, username: string}) {
         *   This endpoint is used to send an action to a client
         body: {
             identifier: [identifier],
-            action: [action]
+            action: [action],
+            data: [data]
         }*/
-        const { identifier, action } = req.body
+        const { identifier, action, data } = req.body
 
         if(!identifier) return res.status(400).send('identifier not provided')
         if(!action) return res.status(400).send('action not provided')
 
         const client = await sql.getClientWithIdentifier(database, identifier)
         if(!client) return res.status(404).send('client not found')
-        if(client.clientType !== 'actuator') return res.status(400).send('client type not supported')
         
         const possibleActions = JSON.parse(client.dataType).actions
 
-        // If an actuator is registered with no actions, shouldnt happen but just in case...
-        if(!possibleActions) return res.status(400).send('client is probably the impostor (should be ejected)')
+        if(!possibleActions) return res.status(400).send('client has no action defined')
+        if(possibleActions.length === 0) return res.status(400).send('client has no action defined')
 
         if(!possibleActions.includes(action)) return res.status(400).send('action not supported')
 
         const ws = clients.find(c=>c.id===identifier)?.websocket
         if(!ws) return res.status(404).send('client not connected')
 
-        ws.send(action)
+        const message: ActionMessage = {
+            action,
+            data
+        }
+        ws.send(JSON.stringify(message))
         res.status(200).send('action sent')
     })
 

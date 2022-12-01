@@ -10,9 +10,9 @@ local clientName = "Energie Base"
 
 
 local dataType = {
-    "type"="induction matrix",
-    "unit"="FE",
-    "keys"= {
+    type="induction matrix",
+    unit="FE",
+    keys= {
         "energy",
         "capacity",
         "inputRate",
@@ -21,11 +21,11 @@ local dataType = {
 }
 
 local registerMsg = {
-    "action"="register",
-    "payload"= {
-        "id"=clientName,
-        "clientType"=clientType,
-        "dataType"=dataType
+    action="register",
+    payload= {
+        id=clientName,
+        clientType=clientType,
+        dataType=dataType
     }
 }
 ws.send(textutils.serializeJSON(registerMsg))
@@ -40,13 +40,13 @@ while true do
     local outputRate = induction.getLastOutput()*0.4
 
     local dataMsg = {
-        "action"="data",
-        "payload"= {
-            "data"= {
-                "energy"=storage,
-                "capacity"=maxStorage,
-                "inputRate"=inputRate,
-                "outputRate"=outputRate
+        action="data",
+        payload= {
+            data= {
+                energy=storage,
+                capacity=maxStorage,
+                inputRate=inputRate,
+                outputRate=outputRate
             }
         }
     }

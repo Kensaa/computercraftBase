@@ -9,9 +9,9 @@ local clientType = "instant grapher"
 local clientName = "chest1"
 
 local dataType = {
-    "type"="chest",
-    "unit"="",
-    "keys"= {
+    type="chest",
+    unit="",
+    keys= {
         "storage",
         "capacity",
         "items"
@@ -19,11 +19,11 @@ local dataType = {
 }
 
 local registerMsg = {
-    "action"="register",
-    "payload"= {
-        "id"=clientName,
-        "clientType"=clientType,
-        "dataType"=dataType
+    action="register",
+    payload= {
+        id=clientName,
+        clientType=clientType,
+        dataType=dataType
     }
 }
 ws.send(textutils.serializeJSON(registerMsg))

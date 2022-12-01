@@ -9,19 +9,19 @@ local clientType = "time-based grapher"
 local clientName = "Base Prod"
 
 local dataType = {
-    "type"="energy rate",
-    "unit"="FE",
-    "keys"= {
+    type="energy rate",
+    unit="FE",
+    keys= {
         "rate"
     }
 }
 
 local registerMsg = {
-    "action"="register",
-    "payload"= {
-        "id"=clientName,
-        "clientType"=clientType,
-        "dataType"=dataType
+    action="register",
+    payload= {
+        id=clientName,
+        clientType=clientType,
+        dataType=dataType
     }
 }
 
@@ -34,10 +34,10 @@ local energyDetector = peripheral.wrap('back')
 while true do
     local rate = energyDetector.getTransferRate()
     local dataMsg = {
-        "action"="data",
-        "payload"= {
-            "data"= {
-                "rate"=rate
+        action="data",
+        payload= {
+            data= {
+                rate=rate
             }
         }
     }

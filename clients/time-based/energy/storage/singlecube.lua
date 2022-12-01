@@ -10,9 +10,9 @@ local clientName = "Energie Base 2"
 
 --local dataType = '{"type":"energy storage","unit":"FE","keys":["energy","capacity"]}'
 local dataType = {
-    "type"="energy storage",
-    "unit"="FE",
-    "keys"= {
+    type="energy storage",
+    unit="FE",
+    keys= {
         "energy",
         "capacity"
     }
@@ -20,11 +20,11 @@ local dataType = {
 
 --local registerMsg = '{"action":"register","payload":{"id":"'..clientName..'","clientType":"'..clientType..'","dataType":'..dataType..'}}'
 local registerMsg = {
-    "action"="register",
-    "payload"= {
-        "id"=clientName,
-        "clientType"=clientType,
-        "dataType"=dataType
+    action="register",
+    payload= {
+        id=clientName,
+        clientType=clientType,
+        dataType=dataType
     }
 }
 ws.send(textutils.serializeJSON(registerMsg))
@@ -38,11 +38,11 @@ while true do
     local maxStorage = cube.getMaxEnergy()*0.4
 
     local dataMsg = {
-        "action"="data",
-        "payload"= {
-            "data"= {
-                "energy"=storage,
-                "capacity"=maxStorage
+        action="data",
+        payload= {
+            data= {
+                energy=storage,
+                capacity=maxStorage
             }
         }
     }

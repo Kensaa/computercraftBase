@@ -45,6 +45,11 @@ export interface DataPayload {
     */
 }
 
+export interface ActionMessage {
+    action: string,
+    data?: Record<string,unknown>
+}
+
 // Enum representing different type of action the client through the websocket
 export type WebsocketAction = 'register' | 'data'
 

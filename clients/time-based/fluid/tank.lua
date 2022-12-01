@@ -9,9 +9,9 @@ local clientType = "time-based grapher"
 local clientName = "Tank 1"
 
 local dataType = {
-    "type"="fluid storage",
-    "unit"="mb",
-    "keys"= {
+    type="fluid storage",
+    unit="mb",
+    keys= {
         "storage",
         "capacity"
     }
@@ -19,11 +19,11 @@ local dataType = {
 
 
 local registerMsg = {
-    "action"="register",
-    "payload"= {
-        "id"=clientName,
-        "clientType"=clientType,
-        "dataType"=dataType
+    action="register",
+    payload= {
+        id=clientName,
+        clientType=clientType,
+        dataType=dataType
     }
 }
 ws.send(textutils.serializeJSON(registerMsg))
@@ -35,11 +35,11 @@ while true do
     local capacity = tank.getCapacity()
 
     local dataMsg = {
-        "action"="data",
-        "payload"= {
-            "data"= {
-                "storage"=storage,
-                "capacity"=capacity
+        action="data",
+        payload= {
+            data= {
+                storage=storage,
+                capacity=capacity
             }
         }
     }

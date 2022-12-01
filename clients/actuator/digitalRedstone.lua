@@ -9,35 +9,37 @@ local clientType = "actuator"
 local clientName = "redstone1"
 
 local dataType = {
-    "type"="digitalRedstone",
-    "unit"="",
-    "keys"= {
-    },
-    "actions"= {
+    type="digitalRedstone",
+    unit="",
+    keys={},
+    actions={
         "on",
         "off"
     }
 }
 
 local registerMsg = {
-    "action"="register",
-    "payload"= {
-        "id"=clientName,
-        "clientType"=clientType,
-        "dataType"=dataType
+    action="register",
+    payload={
+        id=clientName,
+        clientType=clientType,
+        dataType=dataType
     }
 }
 ws.send(textutils.serializeJSON(registerMsg))
  
 while true do
-    local _, url, response, isBinary = os.pullEvent("websocket_message")
-    print(response)
+    local _, url, responseStr, isBinary = os.pullEvent("websocket_message")
     if isBinary then
         print('message is in binary')
     else
-        if response == "on" then
+        local res = textutils.unserializeJSON(responseStr)
+        local action = res['action']
+        local data = res['data']
+        print(action)
+        if action == "on" then
             redstone.setOutput("back", true)
-        elseif response == "off" then
+        elseif action == "off" then
             redstone.setOutput("back", false)
         end
     end
