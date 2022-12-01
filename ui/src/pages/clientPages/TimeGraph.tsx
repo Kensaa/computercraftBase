@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from 'react'
-import AppNavbar from '../components/AppNavbar'
+import AppNavbar from '../../components/AppNavbar'
 import { Container, Tabs, Tab, Form, Spinner } from 'react-bootstrap'
 import { useInterval } from 'usehooks-ts'
 
-import configStore from '../stores/config'
-import authStore from '../stores/auth'
-import Plot from '../components/Plot'
-import { queryFetch } from '../utils'
+import configStore from '../../stores/config'
+import authStore from '../../stores/auth'
+import Plot from '../../components/Plot'
+import { queryFetch } from '../../utils'
 
-import { Client } from '../types'
+import { Client } from '../../types'
 
 interface GraphProps {
   input: string

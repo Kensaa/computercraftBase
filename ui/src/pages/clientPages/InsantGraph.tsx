@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react'
 
-import configStore from '../stores/config'
-import authStore from '../stores/auth'
-import AppNavbar from '../components/AppNavbar'
+import configStore from '../../stores/config'
+import authStore from '../../stores/auth'
+import AppNavbar from '../../components/AppNavbar'
 
-import { queryFetch } from '../utils'
+import { queryFetch } from '../../utils'
 
-import { Client } from '../types'
+import { Client } from '../../types'
 
 interface GraphProps {
     input: string

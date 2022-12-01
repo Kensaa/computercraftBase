@@ -31,7 +31,6 @@ function generateAuthToken(user: {id: number, username: string}) {
     return jwt.sign(user, authTokenSecret)
 }
 
-
 (async ()=>{
     const wsServer = new ws.Server({ port: SOCKETPORT })
     console.log(`websocket server started on port ${SOCKETPORT}`)

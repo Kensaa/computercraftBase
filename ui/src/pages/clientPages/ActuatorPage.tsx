@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react'
 import { ListGroup, Button } from 'react-bootstrap'
 
-import configStore from '../stores/config'
-import authStore from '../stores/auth'
-import AppNavbar from '../components/AppNavbar'
-import Actuator from '../components/Actuator'
+import configStore from '../../stores/config'
+import authStore from '../../stores/auth'
+import AppNavbar from '../../components/AppNavbar'
+import Actuator from '../../components/Actuator'
 
-import { queryFetch } from '../utils'
-import { Client } from '../types'
+import { queryFetch } from '../../utils'
+import { Client } from '../../types'
 
 interface ActuatorProps {
     input: string

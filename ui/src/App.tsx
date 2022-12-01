@@ -5,9 +5,9 @@ import Home from './pages/Home'
 import auth from './stores/auth'
 import Login from './pages/Login'
 
-import TimeGraph from './pages/TimeGraph'
-import InsantGraph from './pages/InsantGraph'
-import ActuatorPage from './pages/ActuatorPage'
+import TimeGraph from './pages/clientPages/TimeGraph'
+import InsantGraph from './pages/clientPages/InsantGraph'
+import ActuatorPage from './pages/clientPages/ActuatorPage'
 
 interface LoginWallProps {
     children: JSX.Element,
