@@ -9,7 +9,7 @@ local clientType = "actuator"
 local clientName = "redstone1"
 
 local dataType = {
-    type="digitalRedstone",
+    type="digital redstone",
     unit="",
     keys={},
     actions={
