@@ -1,8 +1,8 @@
-import {DatabaseClient, Rate, RateType, Storage, StorageType, SubtypedClient, User} from './types'
 import { Database } from 'sqlite3'
 import { promisify } from 'util'
+import { Client, Group, InstantData, TimeData, User } from './type'
 
-const MAXLENGTH = 200
+const MAXLENGTH = 1000
 
 export interface AsyncDatabase extends Database {
     runAsync(sql: string): Promise<void>
@@ -26,274 +26,231 @@ export async function loadDatabase(
     db.getAsync = promisify(db.get)
     db.allAsync = promisify(db.all)
 
+    await db.runAsync(`CREATE TABLE IF NOT EXISTS Clients (
+        dbid INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL UNIQUE,
+        id TEXT NOT NULL,
+        clientType TEXT NOT NULL,
+        dataType TEXT NOT NULL,
+        connected INTEGER NOT NULL,
+        hidden INTEGER NOT NULL
+    );`)
+
+    await db.runAsync(`CREATE TABLE IF NOT EXISTS Groups (
+        dbid INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL UNIQUE,
+        id TEXT NOT NULL,
+        members TEXT NOT NULL
+    )`)
+
+    await db.runAsync(`CREATE TABLE IF NOT EXISTS TimeData (
+        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL UNIQUE,
+        source TEXT NOT NULL,
+        time TEXT NOT NULL,
+        data TEXT NOT NULL
+    );`)
+
+    await db.runAsync(`CREATE TABLE IF NOT EXISTS InstantData (
+        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL UNIQUE,
+        source TEXT NOT NULL,
+        data TEXT NOT NULL
+    );`)
+
     await db.runAsync(`CREATE TABLE IF NOT EXISTS Users (
         id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL UNIQUE,
         username TEXT NOT NULL,
-        password TEXT NOT NULL,
-        permissions TEXT NOT NULL
-    );`)
-    
-    await db.runAsync('DROP TABLE IF EXISTS Clients')
-    await db.runAsync(`CREATE TABLE IF NOT EXISTS Clients (
-        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL UNIQUE,
-        name TEXT NOT NULL,
-        type TEXT NOT NULL,
-        subtype TEXT
-    );`)
-
-    await db.runAsync(`CREATE TABLE IF NOT EXISTS Rates (
-        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL UNIQUE,
-        time INTEGER NOT NULL,
-        rate INTEGER NOT NULL,
-        source TEXT NOT NULL,
-        type TEXT NOT NULL
-    );`)
-
-    await db.runAsync(`CREATE TABLE IF NOT EXISTS Storages (
-        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL UNIQUE,
-        time INTEGER NOT NULL,
-        storage INTEGER NOT NULL,
-        maxStorage INTEGER NOT NULL,
-        source TEXT NOT NULL,
-        type TEXT NOT NULL,
-        data TEXT
+        password TEXT NOT NULL
     );`)
 
     return db
 }
 
-// -----------------USER--------------- \\
-
-export async function getUserByName(
-    db: AsyncDatabase,
-    username: User['username']
-): Promise<User> {
-    const query = 'SELECT * FROM Users WHERE username=?'
-    const queryResult = await db.getAsync(query, username) as {id:number,username:string,password:string,permissions:string}
-    const result = {...queryResult, permissions: JSON.parse(queryResult.permissions)} as User
-    return result
-}
-
-export async function getUserById(
-    db: AsyncDatabase,
-    id: User['id']
-): Promise<User> {
-    const query = 'SELECT * FROM Users WHERE id=?'
-    const queryResult = await db.getAsync(query, id) as {id:number,username:string,password:string,permissions:string}
-    const result = {...queryResult, permissions: JSON.parse(queryResult.permissions)} as User
-    return result
-}
-
-export async function getUsers(
-    db: AsyncDatabase
-) : Promise<User[]> {
-    const query = 'SELECT * FROM Users'
-    const result = (await db.allAsync(query) as {id:number,username:string,password:string,permissions:string}[]).map(e=>({...e,permissions:JSON.parse(e.permissions)}))
-    return result
-}
-
-export async function addUser(
-    db: AsyncDatabase,
-    username: User['username'],
-    password: User['password'],
-    permissions: User['permissions']
-): Promise<void> {
-    const query = 'INSERT INTO Users (username, password, permissions) VALUES (?, ?, ?)'
-    await db.runAsync(query,
-        username,
-        password,
-        JSON.stringify(permissions)
-    )
-}
-
-export async function userExists(
-    db: AsyncDatabase,
-    username: User['username']
-): Promise<boolean> {
-    const query = 'SELECT EXISTS(SELECT 1 FROM Users WHERE username=?);'
-    const res = await db.getAsync(query, username) as { [key: string]: number }
-    return Boolean(Object.values(res)[0])
-}
-
-export async function editUser(
-    db: AsyncDatabase,
-    newUser : User
-): Promise<void> {
-    const query = 'UPDATE Users SET username=?, password=?, permissions=? WHERE id=?'
-    const { username,password,permissions,id } = newUser
-    await db.runAsync(query, username,password,JSON.stringify(permissions),id)
-
-
-}
-
-// -----------------CLIENT--------------- \\
-
-
 export async function getClient(
     db: AsyncDatabase,
-    id: DatabaseClient['id']
-) : Promise<DatabaseClient> {
-    const query = 'SELECT * FROM Clients WHERE id=?'
-    const result = await db.getAsync(query, id) as DatabaseClient
+    dbid: Client['dbid']
+) : Promise<Client> {
+    const result = await db.getAsync('SELECT * FROM Clients WHERE dbid = ?', dbid) as Client
     return result
 }
 
 export async function getClients(
     db: AsyncDatabase
-) : Promise<DatabaseClient[]> {
-    const query = 'SELECT * FROM Clients'
-    const result = await db.allAsync(query) as DatabaseClient[]
+) : Promise<Client[]> {
+    const result = await db.allAsync('SELECT * FROM Clients') as Client[]
     return result
 }
 
-export async function getClientsByType(
+export async function clientExists(
     db: AsyncDatabase,
-    type: DatabaseClient['type']
-) : Promise<DatabaseClient[]> {
-    const query = 'SELECT * FROM Clients WHERE type = ?'
-    const result = await db.allAsync(query, type) as DatabaseClient[]
-    return result
+    id: Client['id']
+) : Promise<boolean> {
+    const result = await db.allAsync('SELECT * FROM Clients WHERE id= ?', id) as Client[]
+    return result.length > 0
 }
 
-export async function getClientByName(
+export async function getClientWithIdentifier(
     db: AsyncDatabase,
-    name: DatabaseClient['name']
-) : Promise<DatabaseClient> {
-    const query = 'SELECT * FROM Clients WHERE name = ?'
-    const result = await db.getAsync(query, name) as DatabaseClient
+    id: Client['id']
+) : Promise<Client> {
+    const result = await db.getAsync('SELECT * FROM Clients WHERE id = ?', id) as Client
     return result
 }
 
 export async function addClient(
     db: AsyncDatabase,
-    name: DatabaseClient['name'],
-    type: DatabaseClient['type'],
-    subtype?: SubtypedClient<StorageType|RateType>['subtype']
-) : Promise<DatabaseClient['id']> {
-    const query = 'INSERT INTO Clients (name, type, subtype) VALUES (?,?,?)'
-    await db.runAsync(query,
-        name,
-        type,
-        subtype
+    id: Client['id'],
+    clientType: Client['clientType'],
+    dataType: Client['dataType'],
+    connected: Client['connected'] = true,
+    hidden: Client['hidden'] = false
+    ) : Promise<number> {
+    await db.runAsync('INSERT INTO Clients (id, clientType, dataType, connected, hidden) VALUES (?,?,?,?,?)',
+        id,
+        clientType,
+        dataType,
+        connected,
+        hidden
     )
-    const id = (await db.getAsync('SELECT id FROM Clients ORDER BY id DESC LIMIT 1') as {id:number}).id as number
-    return id
+    const dbid = (await db.getAsync('SELECT id FROM Clients ORDER BY dbid DESC LIMIT 1') as { dbid: number }).dbid
+    return dbid
 }
 
-export async function removeClient(
-    db: AsyncDatabase,
-    id: DatabaseClient['id']
-): Promise<void> {
-    const query = 'DELETE FROM Clients WHERE id = ?'
-    await db.runAsync(query,id)
-}
-
-
-
-// -----------------STORAGE--------------- \\
-
-export async function getStorage(
-    db: AsyncDatabase,
-    id: Storage['id']
-) : Promise<Storage> {
-    const query = 'SELECT * FROM Storages WHERE id=?'
-    const result = await db.getAsync(query, id) as Storage
-    return result
-}
-
-export async function getStoragesBySource(
-    db: AsyncDatabase,
-    source: Storage['source'],
-    count?: number
-) : Promise<Storage[]> {
-    if(!count) count = 100
-    const query = 'SELECT * FROM Storages WHERE source = ? ORDER BY time DESC LIMIT ?'
-    const result = await db.allAsync(query,source, count) as Storage[]
-    return result.reverse()
-}
-
-export async function getStoragesByType(
-    db: AsyncDatabase,
-    type: Storage['type']
-) : Promise<Storage[]> {
-    const query = 'SELECT * FROM Storages WHERE type = ?'
-    const result = await db.allAsync(query, type) as Storage[]
-    return result
-}
-
-export async function addStorage(
-    db: AsyncDatabase,
-    storage: Storage['storage'],
-    maxStorage: Storage['maxStorage'],
-    source: Storage['source'],
-    type: Storage['type'],
-    data?: Storage['data']
+export async function setClientConnected(
+    database: AsyncDatabase,
+    id: Client['id'],
+    connected: Client['connected']
 ) : Promise<void> {
-    const sourceData = await getStoragesBySource(db, source)
-    if(sourceData.length > MAXLENGTH){
-        const id = (await db.getAsync('SELECT id FROM Storages WHERE source=? ORDER BY time ASC LIMIT 1',source) as {id:number}).id
-        await db.runAsync('DELETE FROM Storages WHERE id = ?',id)
-    }
-    const time = new Date().getTime().toString()
-    const query = 'INSERT INTO Storages (time, storage, maxStorage, source, type, data) VALUES (?,?,?,?,?,?)'
-    await db.runAsync(query,
-        time,
-        storage,
-        maxStorage,
-        source,
-        type,
-        data
+    await database.runAsync('UPDATE Clients SET connected = ? WHERE id = ?', connected, id)
+}
+
+// ------------------------------------------------------------------------------------------------------------------------ \\
+
+export async function getGroup(
+    db: AsyncDatabase,
+    dbid: Group['dbid']
+) : Promise<Group> {
+    const result = await db.getAsync('SELECT * FROM Groups WHERE dbid = ?', dbid) as Group
+    return result
+}
+
+export async function getGroups(
+    db: AsyncDatabase
+) : Promise<Group[]> {
+    const result = await db.allAsync('SELECT * FROM Groups') as Group[]
+    return result
+}
+
+export async function groupExists(
+    db: AsyncDatabase,
+    id: Group['id']
+) : Promise<boolean> {
+    const result = await db.allAsync('SELECT * FROM Groups WHERE id= ?', id) as Group[]
+    return result.length > 0
+}
+
+export async function getGroupWithIdentifier(
+    db: AsyncDatabase,
+    id: Group['id']
+) : Promise<Group> {
+    const result = await db.getAsync('SELECT * FROM Groups WHERE id = ?', id) as Group
+    return result
+}
+
+export async function addGroup(
+    db: AsyncDatabase,
+    id: Group['id'],
+    members: Group['members']
+) : Promise<number> {
+    await db.runAsync('INSERT INTO Groups (id, members) VALUES (?,?)',
+        id,
+        members
     )
+    const dbid = (await db.getAsync('SELECT id FROM Groups ORDER BY dbid DESC LIMIT 1') as { dbid: number }).dbid
+    return dbid
 }
 
 
-// -----------------RATE--------------- \\
+// ------------------------------------------------------------------------------------------------------------------------ \\
 
-export async function getRate(
+export async function addTimeData(
     db: AsyncDatabase,
-    id: Rate['id']
-) : Promise<Rate> {
-    const query = 'SELECT * FROM Rates WHERE id = ?'
-    const result = await db.getAsync(query, id) as Rate
-    return result
-}
-
-export async function getRatesBySource(
-    db: AsyncDatabase,
-    source: Rate['source'],
-    count?: number
-) : Promise<Rate[]> {
-    const query = 'SELECT * FROM Rates WHERE source = ? ORDER BY time DESC LIMIT ?'
-    const result = await db.allAsync(query,source, count) as Rate[]
-    return result.reverse()
-}
-
-export async function getRatesByType(
-    db: AsyncDatabase,
-    type: Rate['type']
-) : Promise<Rate[]> {
-    const query = 'SELECT * FROM Rates WHERE type = ?'
-    const result = await db.allAsync(query, type) as Rate[]
-    return result
-}
-
-export async function addRate(
-    db: AsyncDatabase,
-    rate: Rate['rate'],
-    source: Rate['source'],
-    type: Rate['type']
+    source: Client['id'],
+    time: string,
+    data: string,
 ) : Promise<void> {
-    const sourceData = await getStoragesBySource(db, source)
-    if(sourceData.length > MAXLENGTH){
-        const id = (await db.getAsync('SELECT id FROM Rates WHERE source=? ORDER BY time ASC LIMIT 1',source) as {id:number}).id
-        await db.runAsync('DELETE FROM Rates WHERE id = ?',id)
-    }
-    const time = new Date().getTime().toString()
-    const query = 'INSERT INTO Rates (time, rate, source, type) VALUES (?,?,?,?)'
-    await db.runAsync(query,
-        time,
-        rate,
+    await db.runAsync('INSERT INTO TimeData (source, time, data) VALUES (?,?,?)',
         source,
-        type
+        time,
+        data,
+    )
+    const count = (await db.getAsync('SELECT COUNT(*) FROM TimeData WHERE source = ?', source) as { 'COUNT(*)': number })['COUNT(*)']
+    if (count > MAXLENGTH) {
+        await db.runAsync('DELETE FROM TimeData WHERE id IN (SELECT id FROM TimeData WHERE source = ? ORDER BY id ASC LIMIT ?)',source, count - MAXLENGTH)
+    }
+}
+
+export async function getTimeData(
+    db: AsyncDatabase,
+    source: Client['id'],
+    count = 100
+) : Promise<TimeData[]> {
+    const result = await db.allAsync('SELECT * FROM TimeData WHERE source = ? ORDER BY time DESC LIMIT ?', source, count) as TimeData[]
+    return result
+}
+
+// ------------------------------------------------------------------------------------------------------------------------ \\
+
+export async function setInstantData(
+    db: AsyncDatabase,
+    id: Client['id'],
+    data: string
+) : Promise<void> {
+    if(await instantDataExists(db, id)) {
+        await db.runAsync('UPDATE InstantData SET data = ? WHERE source = ?', data, id)
+    }else{
+        await db.runAsync('INSERT INTO InstantData (source, data) VALUES (?,?)', id, data)
+    }
+}
+
+export async function instantDataExists(
+    db: AsyncDatabase,
+    id: Client['id']
+) : Promise<boolean> {
+    const result = await db.allAsync('SELECT * FROM InstantData WHERE source= ?', id) as Client[]
+    return result.length > 0
+}
+
+export async function getInstantData(
+    db: AsyncDatabase,
+    id: Client['id']
+) : Promise<InstantData> {
+    const result = await db.getAsync('SELECT * FROM InstantData WHERE source = ?', id) as InstantData
+    return result
+}
+
+// ------------------------------------------------------------------------------------------------------------------------ \\
+
+export async function getUserByName(
+    database: AsyncDatabase,
+    username: string
+) : Promise<User> {
+    const result = await database.getAsync('SELECT * FROM Users WHERE username = ?', username) as User
+    return result
+}
+
+export async function userExists(
+    database: AsyncDatabase,
+    username: string
+) : Promise<boolean> {
+    const result = await database.allAsync('SELECT * FROM Users WHERE username= ?', username) as User[]
+    return result.length > 0
+}
+
+export async function addUser(
+    database: AsyncDatabase,
+    username: string,
+    password: string
+) : Promise<void> {
+    await database.runAsync('INSERT INTO Users (username, password) VALUES (?,?)',
+        username,
+        password
     )
 }

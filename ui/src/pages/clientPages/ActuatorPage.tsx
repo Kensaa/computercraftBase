@@ -1,0 +1,53 @@
+import React, { useState, useEffect } from 'react'
+import { ListGroup, Button } from 'react-bootstrap'
+
+import configStore from '../../stores/config'
+import authStore from '../../stores/auth'
+import AppNavbar from '../../components/AppNavbar'
+import Actuator from '../../components/Actuator'
+
+import { queryFetch } from '../../utils'
+import { Client } from '../../types'
+
+interface ActuatorProps {
+    input: string
+}
+
+export default function ActuatorPage({ input }: ActuatorProps) {
+    const config = configStore(state => ({ ...state }))
+    const token = authStore(state => state.token)
+    const [ids, setIds] = useState<string[]>([])
+    const [clients, setClients] = useState<Client[]>([])
+
+    
+    useEffect(() => {
+        setIds(input.split(',').map(e => decodeURI(e).trim()))
+    }, [input])
+
+    useEffect(() => {
+        if(ids.length === 0) return
+
+        queryFetch(
+            `${config.address}/api/client/get`, 
+            { method: 'GET', headers: { 'Authorization': `Bearer ${token}` }},
+            { query: JSON.stringify(ids) }
+        )
+        .then(res => {
+            if(res.status === 200) return res.json()
+            throw new Error('error while fetching clients infos')
+        }).then(data => setClients(data))
+    }, [ids])
+
+
+    return (
+        <div className='w-100 h-100 d-flex flex-column'>
+            <AppNavbar />
+            <div className="w-100 h-100 d-flex flex-row flex-wrap justify-content-center">
+                {clients.map((client, clientI) => (
+                    <Actuator key={clientI} client={client} width="30%" height="40%"/>
+                ))}
+            </div>
+        </div>
+    )
+}
+
