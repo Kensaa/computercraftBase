@@ -5,7 +5,7 @@ const maxSlectedClient = 4
 const fetchOptions = {
     method: 'GET',
     headers: {
-        'count': '100'
+        count: '100'
     }
 }
 
@@ -13,23 +13,23 @@ const plotConfig = {
     responsive: true,
     maintainAspectRatio: false,
     interaction: {
-      mode: 'index',
-      intersect: false,
+        mode: 'index',
+        intersect: false
     },
     stacked: false,
-    animation:{
-      duration:0
+    animation: {
+        duration: 0
     },
     scales: {
-      y: {
-        type: 'linear',
-        display: true,
-        position: 'left',
-        grid: {
-            drawOnChartArea: false,
-          },
-      },
-      /*y1: {
+        y: {
+            type: 'linear',
+            display: true,
+            position: 'left',
+            grid: {
+                drawOnChartArea: false
+            }
+        }
+        /*y1: {
         type: 'linear',
         display: true,
         position: 'right',
@@ -37,9 +37,21 @@ const plotConfig = {
           drawOnChartArea: false,
         },
       },*/
-    },
-}; 
-const plotColors = ['#a50026', '#d73027', '#f46d43', '#fdae61', '#fee08b', '#ffffbf', '#d9ef8b', '#a6d96a', '#66bd63', '#1a9850', '#006837']
+    }
+}
+const plotColors = [
+    '#a50026',
+    '#d73027',
+    '#f46d43',
+    '#fdae61',
+    '#fee08b',
+    '#ffffbf',
+    '#d9ef8b',
+    '#a6d96a',
+    '#66bd63',
+    '#1a9850',
+    '#006837'
+]
 
 interface configType {
     address: string
@@ -61,9 +73,9 @@ export default create<configType>(set => ({
     fetchOptions,
     plotConfig,
     plotColors,
-    setAddress: (address) => set({ address }),
-    setMaxSlectedClient : (maxSlectedClient) => set({ maxSlectedClient }),
-    setFetchOptions: (fetchOptions) => set({ fetchOptions }),
-    setPlotConfig: (plotConfig) => set({ plotConfig }),
-    setPlotColors: (plotColors) => set({ plotColors }),
+    setAddress: address => set({ address }),
+    setMaxSlectedClient: maxSlectedClient => set({ maxSlectedClient }),
+    setFetchOptions: fetchOptions => set({ fetchOptions }),
+    setPlotConfig: plotConfig => set({ plotConfig }),
+    setPlotColors: plotColors => set({ plotColors })
 }))

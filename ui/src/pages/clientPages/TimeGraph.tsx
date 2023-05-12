@@ -11,17 +11,17 @@ import { queryFetch } from '../../utils'
 import { Client } from '../../types'
 
 interface GraphProps {
-  input: string
+    input: string
 }
 
 interface Data {
-    identifier:string
+    identifier: string
     data: DataPoint[]
 }
 
 interface DataPoint {
-    data: Record<string,any>
-    time:string
+    data: Record<string, any>
+    time: string
 }
 
 export default function TimeGraph({ input }: GraphProps) {
@@ -31,55 +31,67 @@ export default function TimeGraph({ input }: GraphProps) {
     const [data, setData] = useState<Data[]>([])
 
     const token = authStore(state => state.token)
-    
+
     useEffect(() => {
         setIds(input.split(',').map(e => decodeURI(e).trim()))
     }, [input])
 
     useEffect(() => {
-        if(ids.length === 0) return
+        if (ids.length === 0) return
 
         queryFetch(
-            `${config.address}/api/client/get`, 
-            { method: 'GET', headers: { 'Authorization': `Bearer ${token}` }},
+            `${config.address}/api/client/get`,
+            { method: 'GET', headers: { Authorization: `Bearer ${token}` } },
             { query: JSON.stringify(ids) }
         )
-        .then(res => {
-            if(res.status === 200) return res.json()
-            throw new Error('error while fetching clients infos')
-        }).then(data => setClients(data))
+            .then(res => {
+                if (res.status === 200) return res.json()
+                throw new Error('error while fetching clients infos')
+            })
+            .then(data => setClients(data))
     }, [ids])
 
     useInterval(() => {
-        if(clients.length === 0) return
+        if (clients.length === 0) return
 
         queryFetch(
             `${config.address}/api/client/fetch`,
-            { method: 'GET', headers: { 'Authorization': `Bearer ${token}` }},
+            { method: 'GET', headers: { Authorization: `Bearer ${token}` } },
             { query: JSON.stringify(clients.map(e => e.id)) }
         )
-        .then(res => {
-            if(res.status === 200) return res.json()
-            throw new Error('error while fetching data')
-        }).then(data => setData(data))
-    },1000)
+            .then(res => {
+                if (res.status === 200) return res.json()
+                throw new Error('error while fetching data')
+            })
+            .then(data => setData(data))
+    }, 1000)
 
-    if(data.length === 0) return(
-        <div className='w-100 h-100 d-flex flex-column justify-content-center align-items-center'>
-            <Spinner animation="border" />
-        </div>)
+    if (data.length === 0)
+        return (
+            <div className='w-100 h-100 d-flex flex-column justify-content-center align-items-center'>
+                <Spinner animation='border' />
+            </div>
+        )
     return (
         <div className='w-100 h-100 d-flex flex-column'>
             <AppNavbar />
-            <div className="w-100 h-100 d-flex flex-row flex-wrap justify-content-center">
-                {data.map((data,i) => {
+            <div className='w-100 h-100 d-flex flex-row flex-wrap justify-content-center'>
+                {data.map((data, i) => {
                     const client = clients.find(e => e.id === data.identifier)
-                    if(!client) return ''
+                    if (!client) return ''
                     const keys = client.dataType.keys
-                    return <Plot key={i} data={data.data} keys={keys} width='45%' height='50%' name={client.id}/>
+                    return (
+                        <Plot
+                            key={i}
+                            data={data.data}
+                            keys={keys}
+                            width='45%'
+                            height='50%'
+                            name={client.id}
+                        />
+                    )
                 })}
             </div>
         </div>
-
     )
 }

@@ -2,10 +2,10 @@ import { WebSocket } from 'ws'
 
 export interface Client {
     dbid?: number // The id of the row in the Clients table
-    id: string, //  An unique string set by the client to identify itself
-    clientType: ClientType, // The type of the client
-    websocket?: WebSocket, // The websocket object of the client (cannot be fetched from the database)
-    dataType: string  /* DataType is stringified JSON of the form :
+    id: string //  An unique string set by the client to identify itself
+    clientType: ClientType // The type of the client
+    websocket?: WebSocket // The websocket object of the client (cannot be fetched from the database)
+    dataType: string /* DataType is stringified JSON of the form :
     {
         "type":"energyStorage"
         "unit":"FE"
@@ -19,25 +19,25 @@ export interface Client {
 
 // Interface representing every message sent through websocket by the client
 export interface WSMessage {
-    action: WebsocketAction,
+    action: WebsocketAction
     payload: never
 }
 
 // Interface representing the payload sent by the client when it registers itself
 export interface RegisterPayload {
-    id: string,
-    clientType: ClientType,
+    id: string
+    clientType: ClientType
     dataType: {
-        type: string,
+        type: string
         unit: string
         keys: string[]
-    },
+    }
     hidden?: boolean
 }
 
 // Interface representing the payload sent by the client when it sends data
 export interface DataPayload {
-    data: Record<string,unknown> /* Data is stringified JSON of the form :
+    data: Record<string, unknown> /* Data is stringified JSON of the form :
     {
         "maxStorage":100000,
         "currentStorage":2000
@@ -46,8 +46,8 @@ export interface DataPayload {
 }
 
 export interface ActionMessage {
-    action: string,
-    data?: Record<string,unknown>
+    action: string
+    data?: Record<string, unknown>
 }
 
 // Enum representing different type of action the client through the websocket
@@ -58,28 +58,28 @@ export type ClientType = 'time-based grapher' | 'instant grapher' | 'actuator'
 
 // Interface representing the data-based data in the form in which it is stored in the database
 export interface TimeData {
-    id: number,
-    source: string,
-    time:string
+    id: number
+    source: string
+    time: string
     data: string
 }
 
 // Interface representing the instant data in the form in which it is stored in the database
 export interface InstantData {
-    id: number,
-    source: string,
+    id: number
+    source: string
     data: string
 }
 
 // Interface representing the User in the form in which it is stored in the database
 export interface User {
-    id?: number,
-    username: string,
+    id?: number
+    username: string
     password: string
 }
 
 export interface Group {
-    dbid?: number,
-    id: string,
+    dbid?: number
+    id: string
     members: string
 }

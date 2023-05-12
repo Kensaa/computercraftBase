@@ -35,12 +35,11 @@ export default create<authType>(set => ({
     login: (loginResponse: LoginResponse) => {
         setLocalStorage('token', loginResponse.token)
         setLocalStorage('user', loginResponse.user)
-        set({...loginResponse, isConnected: true})
+        set({ ...loginResponse, isConnected: true })
     },
     logout: () => {
         removeLocalStorage('token')
         removeLocalStorage('user')
         set({ token: undefined, user: undefined, isConnected: false })
-    },
+    }
 }))
-

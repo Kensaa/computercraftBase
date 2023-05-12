@@ -1,12 +1,7 @@
 {
     "parser": "@typescript-eslint/parser",
-    "plugins": [
-        "@typescript-eslint"
-    ],
-    "extends": [
-        "eslint:recommended",
-        "plugin:@typescript-eslint/recommended"
-    ],
+    "plugins": ["@typescript-eslint"],
+    "extends": ["eslint:recommended", "plugin:@typescript-eslint/recommended"],
     "rules": {
         "@typescript-eslint/no-unused-vars": [
             "warn",
@@ -14,14 +9,8 @@
                 "ignoreRestSiblings": true
             }
         ],
-        "@typescript-eslint/semi": [
-            "warn",
-            "never"
-        ],
-        "capitalized-comments": [
-            "warn",
-            "always"
-        ],
+        "@typescript-eslint/semi": ["warn", "never"],
+        "capitalized-comments": ["warn", "always"],
         "lines-around-comment": [
             "warn",
             {
@@ -33,15 +22,9 @@
         "eqeqeq": "error",
         "no-confusing-arrow": "warn",
         "no-negated-condition": "error",
-        "spaced-comment": [
-            "warn",
-            "always"
-        ],
+        "spaced-comment": ["warn", "always"],
         "yoda": "warn",
         "@typescript-eslint/ban-ts-comment": "warn",
-        "quotes": [
-            "warn",
-            "single"
-        ]
+        "quotes": ["warn", "single"]
     }
 }

@@ -18,9 +18,7 @@ export interface AsyncDatabase extends Database {
     allAsync(sql: string, ...params: unknown[]): Promise<unknown[]>
 }
 
-export async function loadDatabase(
-    src:string
-): Promise<AsyncDatabase> {
+export async function loadDatabase(src: string): Promise<AsyncDatabase> {
     const db = new Database(src) as AsyncDatabase
     db.runAsync = promisify(db.run)
     db.getAsync = promisify(db.get)
@@ -66,31 +64,38 @@ export async function loadDatabase(
 export async function getClient(
     db: AsyncDatabase,
     dbid: Client['dbid']
-) : Promise<Client> {
-    const result = await db.getAsync('SELECT * FROM Clients WHERE dbid = ?', dbid) as Client
+): Promise<Client> {
+    const result = (await db.getAsync(
+        'SELECT * FROM Clients WHERE dbid = ?',
+        dbid
+    )) as Client
     return result
 }
 
-export async function getClients(
-    db: AsyncDatabase
-) : Promise<Client[]> {
-    const result = await db.allAsync('SELECT * FROM Clients') as Client[]
+export async function getClients(db: AsyncDatabase): Promise<Client[]> {
+    const result = (await db.allAsync('SELECT * FROM Clients')) as Client[]
     return result
 }
 
 export async function clientExists(
     db: AsyncDatabase,
     id: Client['id']
-) : Promise<boolean> {
-    const result = await db.allAsync('SELECT * FROM Clients WHERE id= ?', id) as Client[]
+): Promise<boolean> {
+    const result = (await db.allAsync(
+        'SELECT * FROM Clients WHERE id= ?',
+        id
+    )) as Client[]
     return result.length > 0
 }
 
 export async function getClientWithIdentifier(
     db: AsyncDatabase,
     id: Client['id']
-) : Promise<Client> {
-    const result = await db.getAsync('SELECT * FROM Clients WHERE id = ?', id) as Client
+): Promise<Client> {
+    const result = (await db.getAsync(
+        'SELECT * FROM Clients WHERE id = ?',
+        id
+    )) as Client
     return result
 }
 
@@ -101,15 +106,20 @@ export async function addClient(
     dataType: Client['dataType'],
     connected: Client['connected'] = true,
     hidden: Client['hidden'] = false
-    ) : Promise<number> {
-    await db.runAsync('INSERT INTO Clients (id, clientType, dataType, connected, hidden) VALUES (?,?,?,?,?)',
+): Promise<number> {
+    await db.runAsync(
+        'INSERT INTO Clients (id, clientType, dataType, connected, hidden) VALUES (?,?,?,?,?)',
         id,
         clientType,
         dataType,
         connected,
         hidden
     )
-    const dbid = (await db.getAsync('SELECT id FROM Clients ORDER BY dbid DESC LIMIT 1') as { dbid: number }).dbid
+    const dbid = (
+        (await db.getAsync(
+            'SELECT id FROM Clients ORDER BY dbid DESC LIMIT 1'
+        )) as { dbid: number }
+    ).dbid
     return dbid
 }
 
@@ -117,8 +127,12 @@ export async function setClientConnected(
     database: AsyncDatabase,
     id: Client['id'],
     connected: Client['connected']
-) : Promise<void> {
-    await database.runAsync('UPDATE Clients SET connected = ? WHERE id = ?', connected, id)
+): Promise<void> {
+    await database.runAsync(
+        'UPDATE Clients SET connected = ? WHERE id = ?',
+        connected,
+        id
+    )
 }
 
 // ------------------------------------------------------------------------------------------------------------------------ \\
@@ -126,31 +140,38 @@ export async function setClientConnected(
 export async function getGroup(
     db: AsyncDatabase,
     dbid: Group['dbid']
-) : Promise<Group> {
-    const result = await db.getAsync('SELECT * FROM Groups WHERE dbid = ?', dbid) as Group
+): Promise<Group> {
+    const result = (await db.getAsync(
+        'SELECT * FROM Groups WHERE dbid = ?',
+        dbid
+    )) as Group
     return result
 }
 
-export async function getGroups(
-    db: AsyncDatabase
-) : Promise<Group[]> {
-    const result = await db.allAsync('SELECT * FROM Groups') as Group[]
+export async function getGroups(db: AsyncDatabase): Promise<Group[]> {
+    const result = (await db.allAsync('SELECT * FROM Groups')) as Group[]
     return result
 }
 
 export async function groupExists(
     db: AsyncDatabase,
     id: Group['id']
-) : Promise<boolean> {
-    const result = await db.allAsync('SELECT * FROM Groups WHERE id= ?', id) as Group[]
+): Promise<boolean> {
+    const result = (await db.allAsync(
+        'SELECT * FROM Groups WHERE id= ?',
+        id
+    )) as Group[]
     return result.length > 0
 }
 
 export async function getGroupWithIdentifier(
     db: AsyncDatabase,
     id: Group['id']
-) : Promise<Group> {
-    const result = await db.getAsync('SELECT * FROM Groups WHERE id = ?', id) as Group
+): Promise<Group> {
+    const result = (await db.getAsync(
+        'SELECT * FROM Groups WHERE id = ?',
+        id
+    )) as Group
     return result
 }
 
@@ -158,15 +179,19 @@ export async function addGroup(
     db: AsyncDatabase,
     id: Group['id'],
     members: Group['members']
-) : Promise<number> {
-    await db.runAsync('INSERT INTO Groups (id, members) VALUES (?,?)',
+): Promise<number> {
+    await db.runAsync(
+        'INSERT INTO Groups (id, members) VALUES (?,?)',
         id,
         members
     )
-    const dbid = (await db.getAsync('SELECT id FROM Groups ORDER BY dbid DESC LIMIT 1') as { dbid: number }).dbid
+    const dbid = (
+        (await db.getAsync(
+            'SELECT id FROM Groups ORDER BY dbid DESC LIMIT 1'
+        )) as { dbid: number }
+    ).dbid
     return dbid
 }
-
 
 // ------------------------------------------------------------------------------------------------------------------------ \\
 
@@ -174,16 +199,26 @@ export async function addTimeData(
     db: AsyncDatabase,
     source: Client['id'],
     time: string,
-    data: string,
-) : Promise<void> {
-    await db.runAsync('INSERT INTO TimeData (source, time, data) VALUES (?,?,?)',
+    data: string
+): Promise<void> {
+    await db.runAsync(
+        'INSERT INTO TimeData (source, time, data) VALUES (?,?,?)',
         source,
         time,
-        data,
+        data
     )
-    const count = (await db.getAsync('SELECT COUNT(*) FROM TimeData WHERE source = ?', source) as { 'COUNT(*)': number })['COUNT(*)']
+    const count = (
+        (await db.getAsync(
+            'SELECT COUNT(*) FROM TimeData WHERE source = ?',
+            source
+        )) as { 'COUNT(*)': number }
+    )['COUNT(*)']
     if (count > MAXLENGTH) {
-        await db.runAsync('DELETE FROM TimeData WHERE id IN (SELECT id FROM TimeData WHERE source = ? ORDER BY id ASC LIMIT ?)',source, count - MAXLENGTH)
+        await db.runAsync(
+            'DELETE FROM TimeData WHERE id IN (SELECT id FROM TimeData WHERE source = ? ORDER BY id ASC LIMIT ?)',
+            source,
+            count - MAXLENGTH
+        )
     }
 }
 
@@ -191,8 +226,12 @@ export async function getTimeData(
     db: AsyncDatabase,
     source: Client['id'],
     count = 100
-) : Promise<TimeData[]> {
-    const result = await db.allAsync('SELECT * FROM TimeData WHERE source = ? ORDER BY time DESC LIMIT ?', source, count) as TimeData[]
+): Promise<TimeData[]> {
+    const result = (await db.allAsync(
+        'SELECT * FROM TimeData WHERE source = ? ORDER BY time DESC LIMIT ?',
+        source,
+        count
+    )) as TimeData[]
     return result
 }
 
@@ -202,27 +241,41 @@ export async function setInstantData(
     db: AsyncDatabase,
     id: Client['id'],
     data: string
-) : Promise<void> {
-    if(await instantDataExists(db, id)) {
-        await db.runAsync('UPDATE InstantData SET data = ? WHERE source = ?', data, id)
-    }else{
-        await db.runAsync('INSERT INTO InstantData (source, data) VALUES (?,?)', id, data)
+): Promise<void> {
+    if (await instantDataExists(db, id)) {
+        await db.runAsync(
+            'UPDATE InstantData SET data = ? WHERE source = ?',
+            data,
+            id
+        )
+    } else {
+        await db.runAsync(
+            'INSERT INTO InstantData (source, data) VALUES (?,?)',
+            id,
+            data
+        )
     }
 }
 
 export async function instantDataExists(
     db: AsyncDatabase,
     id: Client['id']
-) : Promise<boolean> {
-    const result = await db.allAsync('SELECT * FROM InstantData WHERE source= ?', id) as Client[]
+): Promise<boolean> {
+    const result = (await db.allAsync(
+        'SELECT * FROM InstantData WHERE source= ?',
+        id
+    )) as Client[]
     return result.length > 0
 }
 
 export async function getInstantData(
     db: AsyncDatabase,
     id: Client['id']
-) : Promise<InstantData> {
-    const result = await db.getAsync('SELECT * FROM InstantData WHERE source = ?', id) as InstantData
+): Promise<InstantData> {
+    const result = (await db.getAsync(
+        'SELECT * FROM InstantData WHERE source = ?',
+        id
+    )) as InstantData
     return result
 }
 
@@ -231,16 +284,22 @@ export async function getInstantData(
 export async function getUserByName(
     database: AsyncDatabase,
     username: string
-) : Promise<User> {
-    const result = await database.getAsync('SELECT * FROM Users WHERE username = ?', username) as User
+): Promise<User> {
+    const result = (await database.getAsync(
+        'SELECT * FROM Users WHERE username = ?',
+        username
+    )) as User
     return result
 }
 
 export async function userExists(
     database: AsyncDatabase,
     username: string
-) : Promise<boolean> {
-    const result = await database.allAsync('SELECT * FROM Users WHERE username= ?', username) as User[]
+): Promise<boolean> {
+    const result = (await database.allAsync(
+        'SELECT * FROM Users WHERE username= ?',
+        username
+    )) as User[]
     return result.length > 0
 }
 
@@ -248,8 +307,9 @@ export async function addUser(
     database: AsyncDatabase,
     username: string,
     password: string
-) : Promise<void> {
-    await database.runAsync('INSERT INTO Users (username, password) VALUES (?,?)',
+): Promise<void> {
+    await database.runAsync(
+        'INSERT INTO Users (username, password) VALUES (?,?)',
         username,
         password
     )

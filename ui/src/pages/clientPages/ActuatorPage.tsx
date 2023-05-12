@@ -19,35 +19,38 @@ export default function ActuatorPage({ input }: ActuatorProps) {
     const [ids, setIds] = useState<string[]>([])
     const [clients, setClients] = useState<Client[]>([])
 
-    
     useEffect(() => {
         setIds(input.split(',').map(e => decodeURI(e).trim()))
     }, [input])
 
     useEffect(() => {
-        if(ids.length === 0) return
+        if (ids.length === 0) return
 
         queryFetch(
-            `${config.address}/api/client/get`, 
-            { method: 'GET', headers: { 'Authorization': `Bearer ${token}` }},
+            `${config.address}/api/client/get`,
+            { method: 'GET', headers: { Authorization: `Bearer ${token}` } },
             { query: JSON.stringify(ids) }
         )
-        .then(res => {
-            if(res.status === 200) return res.json()
-            throw new Error('error while fetching clients infos')
-        }).then(data => setClients(data))
+            .then(res => {
+                if (res.status === 200) return res.json()
+                throw new Error('error while fetching clients infos')
+            })
+            .then(data => setClients(data))
     }, [ids])
-
 
     return (
         <div className='w-100 h-100 d-flex flex-column'>
             <AppNavbar />
-            <div className="w-100 h-100 d-flex flex-row flex-wrap justify-content-center">
+            <div className='w-100 h-100 d-flex flex-row flex-wrap justify-content-center'>
                 {clients.map((client, clientI) => (
-                    <Actuator key={clientI} client={client} width="30%" height="40%"/>
+                    <Actuator
+                        key={clientI}
+                        client={client}
+                        width='30%'
+                        height='40%'
+                    />
                 ))}
             </div>
         </div>
     )
 }
-

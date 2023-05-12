@@ -11,7 +11,7 @@ import {
     Legend,
     ArcElement
 } from 'chart.js'
-import { Line } from 'react-chartjs-2';
+import { Line } from 'react-chartjs-2'
 ChartJS.register(
     CategoryScale,
     LinearScale,
@@ -25,7 +25,7 @@ ChartJS.register(
 )
 import configStore from '../stores/config'
 
-interface PlotProps{
+interface PlotProps {
     data: DataPoint[]
     keys: string[]
     width: string
@@ -33,39 +33,41 @@ interface PlotProps{
     name: string
 }
 interface DataPoint {
-    data: Record<string,any>
-    time:string
-
+    data: Record<string, any>
+    time: string
 }
 export default function Plot({ data, keys, width, height, name }: PlotProps) {
-    const config = configStore(state => ({...state}))
-    
-    const plotData = useMemo(() =>({
-        labels: data.map(e => new Date(e.time).toLocaleTimeString()),
-        datasets: keys.map((currentKey,i) => (
-            {
+    const config = configStore(state => ({ ...state }))
+
+    const plotData = useMemo(
+        () => ({
+            labels: data.map(e => new Date(e.time).toLocaleTimeString()),
+            datasets: keys.map((currentKey, i) => ({
                 label: currentKey,
                 data: data.map(e => e.data[currentKey]),
                 backgroundColor: config.plotColors[i],
                 borderColor: config.plotColors[i],
-                color: config.plotColors[i],
-            }
-        ))
-    }),[data, keys, config.plotColors])
+                color: config.plotColors[i]
+            }))
+        }),
+        [data, keys, config.plotColors]
+    )
 
-    const plotOptions = useMemo(() => ({
-        ...config.plotConfig,
-        plugins: {
-            title: {
-                display: true,
-                text: name
+    const plotOptions = useMemo(
+        () => ({
+            ...config.plotConfig,
+            plugins: {
+                title: {
+                    display: true,
+                    text: name
+                }
             }
-        }
-
-    }), [config.plotConfig, name])
+        }),
+        [config.plotConfig, name]
+    )
     return (
-        <div style={{maxWidth: width, maxHeight: height, flexGrow:1}}>
-            <Line data={plotData} options={plotOptions}/>
+        <div style={{ maxWidth: width, maxHeight: height, flexGrow: 1 }}>
+            <Line data={plotData} options={plotOptions} />
         </div>
     )
 }
