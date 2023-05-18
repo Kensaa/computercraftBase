@@ -45,3 +45,31 @@ export const accountSchema = z.object({
     password: z.string()
 })
 export type Account = z.infer<typeof accountSchema>
+/////////////////////////////////////////////////////////////////////////////////
+export const registerPayloadSchema = z.object({
+    name: z.string(),
+    clientType: clientTypeSchema,
+    dataType: z.object({
+        type: z.string(),
+        unit: z.string().optional(),
+        keys: z.string().array().optional(),
+        actions: z.string().array().optional()
+    }),
+    hidden: z.boolean().optional()
+})
+export type RegisterPayload = z.infer<typeof registerPayloadSchema>
+/////////////////////////////////////////////////////////////////////////////////
+export const dataPayloadSchema = z.object({
+    data: z.record(z.string(), z.unknown())
+})
+export type DataPayload = z.infer<typeof dataPayloadSchema>
+/////////////////////////////////////////////////////////////////////////////////
+export const webSocketActionSchema = z.enum(['register', 'data'])
+export type webSocketAction = z.infer<typeof webSocketActionSchema>
+/////////////////////////////////////////////////////////////////////////////////
+export const wsMessageSchema = z.object({
+    action: webSocketActionSchema,
+    payload: registerPayloadSchema.or(dataPayloadSchema)
+})
+export type WSMessage = z.infer<typeof wsMessageSchema>
+/////////////////////////////////////////////////////////////////////////////////

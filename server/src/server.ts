@@ -23,6 +23,11 @@ import groupAll from './endpoints/api/group/all'
 import groupGet from './endpoints/api/group/get'
 import groupCreate from './endpoints/api/group/create'
 import groupRemove from './endpoints/api/group/remove'
+import {
+    dataPayloadSchema,
+    registerPayloadSchema,
+    wsMessageSchema
+} from './types'
 
 const SOCKETPORT = 3694
 const WEBSERVERPORT = SOCKETPORT + 1
@@ -40,6 +45,56 @@ const WEBSERVERPORT = SOCKETPORT + 1
     const database = new ServerDatabase('database.db')
     const connectedClients: { name: string; ws: WebSocket }[] = []
     const authSecret = 'feur'
+
+    wsServer.on('connection', ws => {
+        ws.on('message', async data => {
+            const message = wsMessageSchema.parse(JSON.parse(data.toString()))
+            if (message.action === 'register') {
+                const payload = registerPayloadSchema.parse(message.payload)
+                //Check if client is already connected (it can be the websocket that didn't close properly)
+                const clientSession = connectedClients.find(
+                    e => e.name === payload.name
+                )
+                if (clientSession) {
+                    clientSession.ws.close()
+                    connectedClients.splice(
+                        connectedClients.indexOf(clientSession),
+                        1
+                    )
+                }
+                let hidden = false
+                if (payload.hidden) hidden = payload.hidden
+                database.createClient(
+                    payload.name,
+                    hidden,
+                    payload.clientType,
+                    payload.dataType.type,
+                    payload.dataType.unit,
+                    payload.dataType.keys,
+                    payload.dataType.actions
+                )
+                connectedClients.push({ name: payload.name, ws })
+            } else if (message.action === 'data') {
+                const payload = dataPayloadSchema.parse(message.payload)
+                const clientSession = connectedClients.find(e => e.ws === ws)
+                if (!clientSession) return ws.close()
+                database.addData(clientSession.name, payload.data)
+            } else {
+                ws.send('unsupported action')
+            }
+        })
+
+        ws.on('close', async () => {
+            const clientSession = connectedClients.find(e => e.ws === ws)
+            if (!clientSession) return
+            const client = database.getClientByName(clientSession.name)
+            if (!client) return
+            console.log(
+                `unregistering client named "${client.name}" (${client.type})`
+            )
+            connectedClients.splice(connectedClients.indexOf(clientSession), 1)
+        })
+    })
 
     expressServer.use(
         createDataMiddleware({
