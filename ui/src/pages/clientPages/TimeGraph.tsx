@@ -13,43 +13,36 @@ import { Client } from '../../types'
 interface GraphProps {
     input: string
 }
-
-interface Data {
-    identifier: string
-    data: DataPoint[]
-}
-
-interface DataPoint {
-    data: Record<string, any>
+interface Datapoint {
+    data: Record<string, number>
     time: string
 }
+type Data = Record<string, Datapoint[]>
 
 export default function TimeGraph({ input }: GraphProps) {
     const config = configStore(state => ({ ...state }))
-    const [ids, setIds] = useState<string[]>([])
     const [clients, setClients] = useState<Client[]>([])
-    const [data, setData] = useState<Data[]>([])
+    const [data, setData] = useState<Data>({})
 
     const token = authStore(state => state.token)
 
     useEffect(() => {
-        setIds(input.split(',').map(e => decodeURI(e).trim()))
-    }, [input])
-
-    useEffect(() => {
-        if (ids.length === 0) return
-
-        queryFetch(
-            `${config.address}/api/client/get`,
-            { method: 'GET', headers: { Authorization: `Bearer ${token}` } },
-            { query: JSON.stringify(ids) }
-        )
+        const names = input.split(',').map(e => decodeURI(e).trim())
+        console.log('names', names)
+        fetch(`${config.address}/api/client/all`, {
+            method: 'GET',
+            headers: { Authorization: `Bearer ${token}` }
+        })
             .then(res => {
                 if (res.status === 200) return res.json()
                 throw new Error('error while fetching clients infos')
             })
-            .then(data => setClients(data))
-    }, [ids])
+            .then(clients => clients as Client[])
+            .then(clients =>
+                clients.filter(client => names.includes(client.name))
+            )
+            .then(clients => setClients(clients))
+    }, [input])
 
     useInterval(() => {
         if (clients.length === 0) return
@@ -57,7 +50,7 @@ export default function TimeGraph({ input }: GraphProps) {
         queryFetch(
             `${config.address}/api/client/fetch`,
             { method: 'GET', headers: { Authorization: `Bearer ${token}` } },
-            { query: JSON.stringify(clients.map(e => e.id)) }
+            { query: clients.map(e => e.name), count: 100 }
         )
             .then(res => {
                 if (res.status === 200) return res.json()
@@ -66,7 +59,7 @@ export default function TimeGraph({ input }: GraphProps) {
             .then(data => setData(data))
     }, 1000)
 
-    if (data.length === 0)
+    if (Object.keys(data).length === 0)
         return (
             <div className='w-100 h-100 d-flex flex-column justify-content-center align-items-center'>
                 <Spinner animation='border' />
@@ -76,10 +69,11 @@ export default function TimeGraph({ input }: GraphProps) {
         <div className='w-100 h-100 d-flex flex-column'>
             <AppNavbar />
             <div className='w-100 h-100 d-flex flex-row flex-wrap justify-content-center'>
-                {data.map((data, i) => {
+                {/*data.map((data, i) => {
                     const client = clients.find(e => e.id === data.identifier)
                     if (!client) return ''
-                    const keys = client.dataType.keys
+                    const keys = client.dataKeys
+                    if(!keys) return
                     return (
                         <Plot
                             key={i}
@@ -88,6 +82,20 @@ export default function TimeGraph({ input }: GraphProps) {
                             width='45%'
                             height='50%'
                             name={client.id}
+                        />
+                    )
+                })*/}
+                {clients.map((client, index) => {
+                    const clientData = data[client.name]
+                    if (!client.dataKeys) return
+                    return (
+                        <Plot
+                            key={index}
+                            data={clientData}
+                            keys={client.dataKeys}
+                            width='45%'
+                            height='50%'
+                            name={client.name}
                         />
                     )
                 })}

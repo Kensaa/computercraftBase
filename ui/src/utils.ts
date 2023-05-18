@@ -1,16 +1,25 @@
 export async function queryFetch(
     address: string,
     options: RequestInit = {},
-    query: Record<string, string>
+    queries: Record<string, string | string[] | number>
 ) {
-    let queryString = ''
-    for (const key of Object.keys(query)) {
-        queryString += `${key}=${encodeURIComponent(query[key])}&`
+    const stringifiedQueries = []
+    for (const key of Object.keys(queries)) {
+        const value = queries[key]
+        if (Array.isArray(value)) {
+            for (const e of value) {
+                stringifiedQueries.push(
+                    `${encodeURIComponent(key)}[]=${encodeURIComponent(e)}`
+                )
+            }
+        } else {
+            stringifiedQueries.push(
+                `${encodeURIComponent(key)}=${encodeURIComponent(value)}`
+            )
+        }
     }
-    queryString = queryString.slice(0, -1)
+    let queryString = stringifiedQueries.join('&')
+    if (queryString.length > 0) queryString = '?' + queryString
 
-    return fetch(
-        address + (queryString.length > 0 ? `?${queryString}` : ''),
-        options
-    )
+    return fetch(`${address}${queryString}`, options)
 }

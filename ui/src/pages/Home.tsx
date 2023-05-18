@@ -35,10 +35,10 @@ export default function Home() {
         setSelectedClient([])
         let before = clients
         if (onlyShowConnected) {
-            before = before.filter((e: any) => e.connected)
+            before = before.filter(e => e.connected)
         }
         if (!showHidden) {
-            before = before.filter((e: any) => !e.hidden)
+            before = before.filter(e => !e.hidden)
         }
         if (searchValue.length === 0) {
             setShownClients(before)
@@ -46,7 +46,7 @@ export default function Home() {
             const after = []
             for (const client of before) {
                 if (
-                    client.clientType
+                    client.type
                         .toLowerCase()
                         .includes(searchValue.toLowerCase())
                 ) {
@@ -54,7 +54,7 @@ export default function Home() {
                     continue
                 }
                 if (
-                    client.dataType.type
+                    client.dataType
                         .toLowerCase()
                         .includes(searchValue.toLowerCase())
                 ) {
@@ -62,7 +62,9 @@ export default function Home() {
                     continue
                 }
                 if (
-                    client.id.toLowerCase().includes(searchValue.toLowerCase())
+                    client.name
+                        .toLowerCase()
+                        .includes(searchValue.toLowerCase())
                 ) {
                     after.push(client)
                 }
@@ -80,19 +82,24 @@ export default function Home() {
         }
     }
 
-    const onPressed = () => {
+    const onBtnPressed = () => {
         if (selectedClient.length === 0) return
         const paramString = selectedClient
-            .map(e => shownClients[e].id)
+            .map(e => shownClients[e].name)
             .join(',')
-        const loc =
-            shownClients[selectedClient[0]].clientType === 'time-based grapher'
-                ? 'time'
-                : shownClients[selectedClient[0]].clientType ===
-                  'instant grapher'
-                ? 'instant'
-                : 'actuator'
-        setLocation(`/client/${loc}/${paramString}`)
+        let location = ''
+        switch (shownClients[selectedClient[0]].type) {
+            case 'time-based grapher':
+                location = 'time'
+                break
+            case 'instant grapher':
+                location = 'instant'
+                break
+            case 'actuator':
+                location = 'actuator'
+        }
+
+        setLocation(`/client/${location}/${paramString}`)
     }
     return (
         <div className='w-100 h-100 d-flex flex-column'>
@@ -134,52 +141,20 @@ export default function Home() {
                             </tr>
                         </thead>
                         <tbody>
-                            {shownClients.map((client, i) => {
-                                const style: CSSProperties = {
-                                    background: '',
-                                    color: '',
-                                    pointerEvents: 'auto'
-                                }
-                                let disabled = false
-                                if (selectedClient.includes(i)) {
-                                    style.background = 'rgba(0, 0, 0, 0.3)'
-                                } else if (selectedClient.length > 0) {
-                                    if (
-                                        client.clientType !==
-                                        shownClients[selectedClient[0]]
-                                            .clientType
-                                    ) {
-                                        style.background = 'rgba(0, 0, 0, 0.05)'
-                                        style.color = 'rgba(0, 0, 0, 0.6)'
-                                        disabled = true
-                                        style.pointerEvents = 'none'
-                                    }
-                                }
-
+                            {shownClients.map((client, index) => {
+                                let selected = selectedClient.includes(index)
+                                let disabled =
+                                    selectedClient.length > 0 &&
+                                    client.type !==
+                                        shownClients[selectedClient[0]].type
                                 return (
-                                    <tr
-                                        style={style}
-                                        className='user-select-none'
-                                        key={i}
-                                        onClick={() => {
-                                            if (!disabled) clientClicked(i)
-                                        }}
-                                    >
-                                        <td>{client.id}</td>
-                                        <td>{client.dataType.type}</td>
-                                        <td>
-                                            {client.clientType ===
-                                            'time-based grapher'
-                                                ? 'Time-based'
-                                                : client.clientType ===
-                                                  'instant grapher'
-                                                ? 'Instant'
-                                                : 'Actuator'}
-                                        </td>
-                                        <td>
-                                            {client.connected ? 'Yes' : 'No'}
-                                        </td>
-                                    </tr>
+                                    <TableRow
+                                        client={client}
+                                        key={index}
+                                        onClick={() => clientClicked(index)}
+                                        selected={selected}
+                                        disabled={disabled}
+                                    />
                                 )
                             })}
                         </tbody>
@@ -187,12 +162,61 @@ export default function Home() {
                     <Button
                         disabled={selectedClient.length === 0}
                         variant='outline-primary'
-                        onClick={onPressed}
+                        onClick={onBtnPressed}
                     >
                         Open
                     </Button>
                 </div>
             </Container>
         </div>
+    )
+}
+
+interface TableRowProps {
+    client: Client
+    selected?: boolean
+    disabled?: boolean
+    onClick: () => void
+}
+function TableRow({
+    client,
+    selected = false,
+    disabled = false,
+    onClick
+}: TableRowProps) {
+    const typeToString = (type: Client['type']) => {
+        let typeString = ''
+        switch (type) {
+            case 'time-based grapher':
+                typeString = 'Time-based'
+                break
+            case 'instant grapher':
+                typeString = 'Instant'
+                break
+            case 'actuator':
+                typeString = 'Actuator'
+                break
+            default:
+                typeString = 'Unknown'
+        }
+        return typeString
+    }
+    return (
+        <tr
+            className={[
+                'user-select-none',
+                'tableRow',
+                selected ? 'selected' : '',
+                disabled ? 'disabled' : ''
+            ]
+                .filter(e => e !== '')
+                .join(' ')}
+            onClick={onClick}
+        >
+            <td>{client.name}</td>
+            <td>{client.dataType}</td>
+            <td>{typeToString(client.type)}</td>
+            <td>{client.connected ? 'Yes' : 'No'}</td>
+        </tr>
     )
 }
