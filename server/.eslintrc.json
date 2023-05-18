@@ -14,15 +14,15 @@
         "lines-around-comment": [
             "warn",
             {
-                "beforeLineComment": true,
-                "allowBlockStart": true
+                "beforeLineComment": false,
+                "allowBlockStart": true,
+                "afterLineComment": false
             }
         ],
         "block-scoped-var": "error",
         "eqeqeq": "error",
         "no-confusing-arrow": "warn",
         "no-negated-condition": "error",
-        "spaced-comment": ["warn", "always"],
         "yoda": "warn",
         "@typescript-eslint/ban-ts-comment": "warn",
         "quotes": ["warn", "single"]

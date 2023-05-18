@@ -1,48 +1,10 @@
 import * as Database from 'better-sqlite3'
 import * as fs from 'fs'
+import { Client, ClientInfo, Account, Data, Group } from './types'
 
 const MAX_COUNT = 10000
 
-export interface Client {
-    name: string
-    hidden: boolean
-    infoID: number
-}
-
-export interface ClientInfo {
-    id: number
-    type: ClientType
-    dataType: string
-    dataUnit: string
-    dataKeys: string[]
-    actions: string[]
-}
-
-export interface Group {
-    name: string
-}
-
-export interface GroupMember {
-    groupName: number
-    clientName: number
-}
-
-export interface Data {
-    id: number
-    source: number
-    data: Record<string, any>
-    time: string
-}
-
-export interface Account {
-    id: number
-    username: string
-    password: string
-}
-
-export type ClientType = 'time-based grapher' | 'instant grapher' | 'actuator'
-
-class ServerDatabase {
+export class ServerDatabase {
     filename: string
     db: Database.Database
     backupDelay: number
@@ -55,11 +17,11 @@ class ServerDatabase {
     constructor(filename: string, backupDelay = 10) {
         this.filename = filename
         this.backupDelay = backupDelay
-        //this creates a new database of create an existing one
+        //This creates a new database of create an existing one
         const firstRun = !fs.existsSync(filename)
         const temp = new Database(filename)
         if (firstRun) {
-            //create tables
+            //Create tables
             temp.exec(`CREATE TABLE ClientInfos (
                 id INTEGER NOT NULL, /*primary key, index of row in database*/
                 type TEXT NOT NULL, /*type of client*/
@@ -113,27 +75,28 @@ class ServerDatabase {
 
         setInterval(() => this.save(), backupDelay * 1000)
     }
+
     /**
-     * save database to file
+     * Save database to file
      */
     async save() {
         await this.db.backup(this.filename)
     }
 
     /**
-     * insert a object into a table of a database
+     * Insert a object into a table of a database
      * @param table The table to insert into
      * @param data The object of the data to insert
      * @returns The insert request response
      */
-    insert(table: string, data: Record<string, any>): Database.RunResult {
+    insert(table: string, data: Record<string, unknown>): Database.RunResult {
         const keys = Object.keys(data).filter(e => data[e] !== undefined)
         const keysString = `(${keys.join(',')})`
         const values = keys
             .map(e => data[e])
             .map(e => {
-                if (typeof e == 'boolean') return e ? 1 : 0
-                return e
+                if (typeof e === 'boolean') return e ? 1 : 0
+                return e as string
             })
             .map(e => `'${e.toString()}'`)
         const valuesString = `(${values.join(',')})`
@@ -147,7 +110,7 @@ class ServerDatabase {
      * @param data the data to check for
      * @returns true if row exists
      */
-    exists(table: string, data: Record<string, any>): boolean {
+    exists(table: string, data: Record<string, unknown>): boolean {
         return this.count(table, data) > 0
     }
 
@@ -157,10 +120,10 @@ class ServerDatabase {
      * @param data the data to check for
      * @returns the count of row
      */
-    count(table: string, data: Record<string, any>): number {
+    count(table: string, data: Record<string, unknown>): number {
         const conditions = Object.keys(data).map(key => {
             const value = data[key]
-            const v = typeof value == 'number' ? value : `'${value}'`
+            const v = typeof value === 'number' ? value : `'${value}'`
             return `${key} = ${v}`
         })
         const request = `SELECT * FROM ${table} WHERE ${conditions.join(
@@ -175,11 +138,11 @@ class ServerDatabase {
      * @param keys the keys of the data that needs parsing
      * @returns the parsed data
      */
-    parseData<T>(data: Record<string, any>, keys: string[]) {
-        const out: Record<string, any> = {}
+    parseData<T>(data: Record<string, unknown>, keys: string[]) {
+        const out: Record<string, unknown> = {}
         Object.keys(data).map(key => {
             if (keys.includes(key)) {
-                out[key] = JSON.parse(data[key])
+                out[key] = JSON.parse(data[key] as string)
             } else {
                 out[key] = data[key]
             }
@@ -188,7 +151,7 @@ class ServerDatabase {
     }
 
     /**
-     * creates a new client in the database
+     * Creates a new client in the database
      * @param name name of the client
      * @param hidden is the client hidden in the UI
      * @param type type of the client
@@ -234,13 +197,16 @@ class ServerDatabase {
                         FROM Clients 
                         INNER JOIN CLientInfos ON Clients.infoID = ClientInfos.id 
                         WHERE Clients.name = ?`
-        const rawData = this.db.prepare(request).get(name)
+        const rawData = this.db.prepare(request).get(name) as Record<
+            string,
+            unknown
+        >
         if (!rawData) return undefined
 
-        return this.parseData<Omit<Client & ClientInfo, 'infoID' | 'id'>>(
-            rawData,
-            ['dataKeys', 'actions']
-        )
+        return this.parseData<Client & ClientInfo>(rawData, [
+            'dataKeys',
+            'actions'
+        ])
     }
 
     /**
@@ -251,12 +217,12 @@ class ServerDatabase {
         const request = `SELECT Clients.name, Clients.hidden, ClientInfos.type, ClientInfos.dataType, ClientInfos.dataUnit, ClientInfos.dataKeys, ClientInfos.actions
         FROM Clients 
         INNER JOIN CLientInfos ON Clients.infoID = ClientInfos.id`
-        const rawData = this.db.prepare(request).all() as Record<string, any>[]
+        const rawData = this.db.prepare(request).all() as Record<
+            string,
+            unknown
+        >[]
         return rawData.map(data =>
-            this.parseData<Omit<Client & ClientInfo, 'infoID' | 'id'>>(data, [
-                'dataKeys',
-                'actions'
-            ])
+            this.parseData<Client & ClientInfo>(data, ['dataKeys', 'actions'])
         )
     }
 
@@ -266,7 +232,7 @@ class ServerDatabase {
      * @returns the id of the created group or undefined if the group already exists
      */
     createGroup(name: Group['name']) {
-        if (this.exists('Groups', { name })) return undefined
+        if (this.groupExists(name)) return undefined
         return this.insert('Groups', { name }).lastInsertRowid as number
     }
 
@@ -276,47 +242,32 @@ class ServerDatabase {
      * @returns true if operation succeeded, false otherwise
      */
     removeGroup(name: Group['name']): boolean {
-        if (!this.exists('Groups', { name })) return false
-        const request1 = `DELETE FROM GroupMembers WHERE groupName = ?`
-        const request2 = `DELETE FROM Groups WHERE name = ?`
+        if (this.groupExists(name)) return false
+        const request1 = 'DELETE FROM GroupMembers WHERE groupName = ?'
+        const request2 = 'DELETE FROM Groups WHERE name = ?'
         this.db.prepare(request1).run(name)
         this.db.prepare(request2).run(name)
         return true
     }
 
     /**
-     * Returns all groups and their members
-     * @returns a dict with the key being the group name and the value an array of the members of said group
+     * Returns all groups
+     * @returns a list of all the groups name
      */
     getGroups() {
-        const groupNames = this.db.prepare('SELECT name FROM Groups').all() as {
-            name: string
-        }[]
+        const groupNames = this.db
+            .prepare('SELECT * FROM Groups')
+            .all() as Group[]
+        return groupNames
+    }
 
-        const groups: Record<
-            string,
-            Omit<Client & ClientInfo, 'infoID' | 'id'>[]
-        > = {}
-        for (const { name } of groupNames) {
-            const rawData = this.db
-                .prepare(
-                    `SELECT Clients.name, Clients.hidden, ClientInfos.type, ClientInfos.dataType, ClientInfos.dataUnit, ClientInfos.dataKeys, ClientInfos.actions
-                FROM GroupMembers 
-                INNER JOIN Clients ON Clients.name = GroupMembers.clientName
-                INNER JOIN CLientInfos ON Clients.infoID = ClientInfos.id 
-                WHERE GroupMembers.groupName = ?
-                `
-                )
-                .all(name) as Record<string, any>[]
-
-            groups[name] = rawData.map(data =>
-                this.parseData<Omit<Client & ClientInfo, 'infoID' | 'id'>>(
-                    data,
-                    ['dataKeys', 'actions']
-                )
-            )
-        }
-        return groups
+    /**
+     * Check if a group exists by its name
+     * @param name name of the group
+     * @returns true if group exists, false otherwise
+     */
+    groupExists(name: Group['name']) {
+        return this.exists('Groups', { name })
     }
 
     /**
@@ -333,10 +284,10 @@ class ServerDatabase {
                         WHERE GroupMembers.groupName = ?`
         const rawData = this.db.prepare(request).all(name) as Record<
             string,
-            any
+            unknown
         >[]
         return rawData.map(data =>
-            this.parseData<Omit<Client & ClientInfo, 'infoID' | 'id'>[]>(data, [
+            this.parseData<(Client & ClientInfo)[]>(data, [
                 'dataKeys',
                 'actions'
             ])
@@ -358,7 +309,7 @@ class ServerDatabase {
     }
 
     /**
-     * remove a client from a group
+     * Remove a client from a group
      * @param groupName name of the group
      * @param clientName name of the client
      * @returns tue if operation succeeded, false otherwise
@@ -369,7 +320,8 @@ class ServerDatabase {
     ) {
         if (!this.exists('GroupMembers', { groupName, clientName }))
             return false
-        const request = `DELETE FROM GroupMembers WHERE groupName = ? AND clientName = ?`
+        const request =
+            'DELETE FROM GroupMembers WHERE groupName = ? AND clientName = ?'
         this.db.prepare(request).run(groupName, clientName)
         return true
     }
@@ -383,7 +335,7 @@ class ServerDatabase {
     addData(source: Client['name'], data: Data['data']) {
         const client = this.getClientByName(source)
         if (!client) return false
-        if (client.type == 'instant grapher') {
+        if (client.type === 'instant grapher') {
             if (this.exists('Data', { source })) {
                 this.db
                     .prepare(
@@ -420,20 +372,16 @@ class ServerDatabase {
      * @param source name of the client
      * @returns the data from the client (single data if client is an instant grapher, an aray otherwise)
      */
-    getDataFromClient(source: Client['name'], maxCount: number = 100) {
+    getDataFromClient(source: Client['name'], maxCount = 100) {
         const client = this.getClientByName(source)
-        if (!client) return false
+        if (!client) return []
         const rawData = this.db
-            .prepare(`SELECT data, time FROM Data WHERE source = ? LIMIT ?`)
-            .all(source, maxCount) as Record<string, any>[]
-        if (client.type == 'instant grapher') {
-            return this.parseData<Omit<Data, 'id' | 'source'>>(rawData[0], [
-                'data'
-            ])
+            .prepare('SELECT data, time FROM Data WHERE source = ? LIMIT ?')
+            .all(source, maxCount) as Record<string, unknown>[]
+        if (client.type === 'instant grapher') {
+            return [this.parseData<Data>(rawData[0], ['data'])]
         } else {
-            return rawData.map(data =>
-                this.parseData<Omit<Data, 'id' | 'source'>>(data, ['data'])
-            )
+            return rawData.map(data => this.parseData<Data>(data, ['data']))
         }
     }
 
@@ -441,19 +389,19 @@ class ServerDatabase {
      * Create a new account
      * @param username username of the account
      * @param password hashed password of the account
-     * @returns true if operation succeeded, false otherwise
+     * @returns id of the client or undefined if client already exists
      */
     createAccount(
         username: Account['username'],
         password: Account['password']
     ) {
-        if (this.exists('Accounts', { username })) return false
-        this.insert('Accounts', { username, password })
-        return true
+        if (this.accountExists(username)) return false
+        return this.insert('Accounts', { username, password })
+            .lastInsertRowid as number
     }
 
     /**
-     * check if an account exists
+     * Check if an account exists
      * @param username username of the account
      * @returns true if account exists, false otherwise
      */
@@ -462,12 +410,29 @@ class ServerDatabase {
     }
 
     /**
-     * try to login to an account (does username and password match)
+     * Try to login to an account (does username and password match)
      * @param username username of account to login to
      * @param password hashed password of the account to login to
      * @returns true if password is correct, false otherwise
      */
     login(username: Account['username'], password: Account['password']) {
-        return this.exists('Accounts', { username, password })
+        const res = this.db
+            .prepare(
+                'SELECT id FROM Accounts WHERE username = ? AND password = ?'
+            )
+            .get(username, password) as { id: number }
+        if (!res) return undefined
+        return res.id
+    }
+
+    /**
+     * Return the account object from id (be aware that it also returns password)
+     * @param id id of the account
+     * @returns the account or undefined if it doesn't exist
+     */
+    getAccount(id: Account['id']): Account | undefined {
+        return this.db
+            .prepare('SELECT * FROM Accounts WHERE id = ?')
+            .get(id) as Account
     }
 }
