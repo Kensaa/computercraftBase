@@ -10,8 +10,6 @@ local clientName = "redstone1"
 
 local dataType = {
     type="digital redstone",
-    unit="",
-    keys={},
     actions={
         "on",
         "off"
@@ -21,7 +19,7 @@ local dataType = {
 local registerMsg = {
     action="register",
     payload={
-        id=clientName,
+        name=clientName,
         clientType=clientType,
         dataType=dataType
     }

@@ -19,7 +19,7 @@ local dataType = {
 local registerMsg = {
     action="register",
     payload= {
-        id=clientName,
+        name=clientName,
         clientType=clientType,
         dataType=dataType
     }
