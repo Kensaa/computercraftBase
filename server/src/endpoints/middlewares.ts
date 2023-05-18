@@ -11,14 +11,18 @@ export interface Instances {
     authSecret: string
 }
 
-export interface Request<Q extends {} = {}, B = {}> extends express.Request {
+export interface Request<
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    Q extends Record<string, any> = Record<string, any>,
+    B = Record<string, unknown>
+> extends express.Request {
     query: Q
     body: B
     instances?: Instances
     user?: { id: number }
 }
 
-export interface Response extends express.Response {}
+export type Response = express.Response
 
 export function createDataMiddleware(instances: Instances) {
     return (req: Request, res: Response, next: express.NextFunction) => {
@@ -35,7 +39,7 @@ export function errorMiddleware(
     if (err instanceof ZodError) {
         res.status(400).json(err.errors)
     } else {
-        res.status(500).json(err)
+        res.status(500).json(err.stack)
     }
 }
 
