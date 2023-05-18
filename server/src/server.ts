@@ -29,7 +29,7 @@ import {
     registerPayloadSchema,
     wsMessageSchema
 } from './types'
-
+import { randomBytes } from 'crypto'
 const SOCKETPORT = 3694
 const WEBSERVERPORT = SOCKETPORT + 1
 
@@ -45,7 +45,7 @@ const WEBSERVERPORT = SOCKETPORT + 1
 
     const database = new ServerDatabase('database.db')
     const connectedClients: { name: string; ws: WebSocket }[] = []
-    const authSecret = 'feur'
+    const authSecret = randomBytes(64).toString('hex')
 
     wsServer.on('connection', ws => {
         ws.on('message', async data => {
