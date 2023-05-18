@@ -25,7 +25,7 @@ export default function Login() {
         if (!event.currentTarget.checkValidity()) return
         const hashedPassword = sha256(password).toString()
 
-        fetch(config.address + '/api/user/login', {
+        fetch(config.address + '/api/account/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username, password: hashedPassword })

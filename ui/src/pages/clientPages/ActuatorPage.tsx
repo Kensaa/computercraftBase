@@ -16,27 +16,25 @@ interface ActuatorProps {
 export default function ActuatorPage({ input }: ActuatorProps) {
     const config = configStore(state => ({ ...state }))
     const token = authStore(state => state.token)
-    const [ids, setIds] = useState<string[]>([])
     const [clients, setClients] = useState<Client[]>([])
 
     useEffect(() => {
-        setIds(input.split(',').map(e => decodeURI(e).trim()))
-    }, [input])
-
-    useEffect(() => {
-        if (ids.length === 0) return
-
-        queryFetch(
-            `${config.address}/api/client/get`,
-            { method: 'GET', headers: { Authorization: `Bearer ${token}` } },
-            { query: JSON.stringify(ids) }
-        )
+        const names = input.split(',').map(e => decodeURI(e).trim())
+        fetch(`${config.address}/api/client/all`, {
+            method: 'GET',
+            headers: { Authorization: `Bearer ${token}` }
+        })
             .then(res => {
                 if (res.status === 200) return res.json()
                 throw new Error('error while fetching clients infos')
             })
-            .then(data => setClients(data))
-    }, [ids])
+
+            .then(clients => clients as Client[])
+            .then(clients =>
+                clients.filter(client => names.includes(client.name))
+            )
+            .then(clients => setClients(clients))
+    }, [input])
 
     return (
         <div className='w-100 h-100 d-flex flex-column'>

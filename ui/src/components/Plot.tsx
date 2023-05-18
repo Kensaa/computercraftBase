@@ -26,14 +26,14 @@ ChartJS.register(
 import configStore from '../stores/config'
 
 interface PlotProps {
-    data: DataPoint[]
+    data: Datapoint[]
     keys: string[]
     width: string
     height: string
     name: string
 }
-interface DataPoint {
-    data: Record<string, any>
+interface Datapoint {
+    data: Record<string, number>
     time: string
 }
 export default function Plot({ data, keys, width, height, name }: PlotProps) {

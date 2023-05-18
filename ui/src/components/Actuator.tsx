@@ -19,8 +19,7 @@ export default function Actuator({ client, width, height }: ActuatorProps) {
     const onSend = () => {
         if (selected === undefined) return
         setSelected(undefined)
-        console.log('send', selected)
-        if (!client.dataType.actions) return
+        if (!client.actions) return
         fetch(`${config.address}/api/client/action`, {
             method: 'POST',
             headers: {
@@ -28,33 +27,38 @@ export default function Actuator({ client, width, height }: ActuatorProps) {
                 Authorization: `Bearer ${token}`
             },
             body: JSON.stringify({
-                identifier: client.id,
-                action: client.dataType.actions[selected]
+                name: client.name,
+                action: client.actions[selected]
             })
         })
     }
 
     return (
         <div
-            style={{ width, height }}
-            className='m-3 d-flex flex-column justify-content-center align-items-center border'
+            style={{ maxWidth: width, maxHeight: height, padding: '0.5rem' }}
+            className='m-3 d-flex flex-column align-items-center border'
         >
-            <h3 style={{ justifySelf: 'flex-start' }}>{client.id}</h3>
-            <ListGroup>
-                {client.dataType.actions?.map((action, actionI) => (
-                    <ListGroup.Item
-                        className='user-select-none'
-                        active={selected === actionI}
-                        onClick={() => setSelected(actionI)}
-                        key={actionI}
-                    >
-                        {action}
-                    </ListGroup.Item>
-                ))}
-            </ListGroup>
+            <h3>{client.name}</h3>
+            <div
+                className='overflow-auto'
+                style={{ maxHeight: '70%', flexGrow: 1 }}
+            >
+                <ListGroup className=''>
+                    {client.actions?.map((action, actionI) => (
+                        <ListGroup.Item
+                            className='user-select-none'
+                            active={selected === actionI}
+                            onClick={() => setSelected(actionI)}
+                            key={actionI}
+                        >
+                            {action}
+                        </ListGroup.Item>
+                    ))}
+                </ListGroup>
+            </div>
             <Button
                 disabled={selected === undefined}
-                className='mt-3'
+                style={{ marginTop: '0.5rem' }}
                 onClick={onSend}
             >
                 Send
