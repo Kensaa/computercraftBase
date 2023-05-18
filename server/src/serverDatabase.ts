@@ -1,6 +1,8 @@
 import * as Database from 'better-sqlite3'
 import * as fs from 'fs'
 
+const MAX_COUNT = 10000
+
 export interface Client {
     name: string
     hidden: boolean
@@ -9,11 +11,11 @@ export interface Client {
 
 export interface ClientInfo {
     id: number
-    type: string
+    type: ClientType
     dataType: string
     dataUnit: string
-    dataKeys: string
-    actions: string
+    dataKeys: string[]
+    actions: string[]
 }
 
 export interface Group {
@@ -24,6 +26,21 @@ export interface GroupMember {
     groupName: number
     clientName: number
 }
+
+export interface Data {
+    id: number
+    source: number
+    data: Record<string, any>
+    time: string
+}
+
+export interface Account {
+    id: number
+    username: string
+    password: string
+}
+
+export type ClientType = 'time-based grapher' | 'instant grapher' | 'actuator'
 
 class ServerDatabase {
     filename: string
@@ -78,6 +95,7 @@ class ServerDatabase {
                 id INTEGER NOT NULL, /*primary key, index of row in database*/
                 source TEXT NOT NULL, /*foreign key, name of the source client*/
                 data TEXT NOT NULL, /*stringified object where keys are element of client's datakeys*/
+                time TEXT NOT NULL, /*time when data was added*/
                 PRIMARY KEY (id),
                 FOREIGN KEY (source) REFERENCES Clients(name)
             )`)
@@ -124,13 +142,22 @@ class ServerDatabase {
     }
 
     /**
-     * Check if a row exists in a table based on a single column
+     * Check if a row exists in a table
      * @param table the table to check into
-     * @param column the column to check into
-     * @param value the value to check for
+     * @param data the data to check for
      * @returns true if row exists
      */
     exists(table: string, data: Record<string, any>): boolean {
+        return this.count(table, data) > 0
+    }
+
+    /**
+     * Count rows from a table
+     * @param table the table to check into
+     * @param data the data to check for
+     * @returns the count of row
+     */
+    count(table: string, data: Record<string, any>): number {
         const conditions = Object.keys(data).map(key => {
             const value = data[key]
             const v = typeof value == 'number' ? value : `'${value}'`
@@ -139,7 +166,25 @@ class ServerDatabase {
         const request = `SELECT * FROM ${table} WHERE ${conditions.join(
             ' AND '
         )}`
-        return this.db.prepare(request).all().length > 0
+        return this.db.prepare(request).all().length
+    }
+
+    /**
+     * Take a Object where some keys are stringified object and parse them back to objects
+     * @param data the raw data to parse
+     * @param keys the keys of the data that needs parsing
+     * @returns the parsed data
+     */
+    parseData<T>(data: Record<string, any>, keys: string[]) {
+        const out: Record<string, any> = {}
+        Object.keys(data).map(key => {
+            if (keys.includes(key)) {
+                out[key] = JSON.parse(data[key])
+            } else {
+                out[key] = data[key]
+            }
+        })
+        return out as T
     }
 
     /**
@@ -167,8 +212,8 @@ class ServerDatabase {
             type,
             dataType,
             dataUnit,
-            dataKeys,
-            actions
+            dataKeys: JSON.stringify(dataKeys),
+            actions: JSON.stringify(actions)
         }).lastInsertRowid
         const clientID = this.insert('Clients', {
             name,
@@ -189,10 +234,13 @@ class ServerDatabase {
                         FROM Clients 
                         INNER JOIN CLientInfos ON Clients.infoID = ClientInfos.id 
                         WHERE Clients.name = ?`
-        return this.db.prepare(request).get(name) as Omit<
-            Client & ClientInfo,
-            'infoID' | 'id'
-        >
+        const rawData = this.db.prepare(request).get(name)
+        if (!rawData) return undefined
+
+        return this.parseData<Omit<Client & ClientInfo, 'infoID' | 'id'>>(
+            rawData,
+            ['dataKeys', 'actions']
+        )
     }
 
     /**
@@ -203,10 +251,13 @@ class ServerDatabase {
         const request = `SELECT Clients.name, Clients.hidden, ClientInfos.type, ClientInfos.dataType, ClientInfos.dataUnit, ClientInfos.dataKeys, ClientInfos.actions
         FROM Clients 
         INNER JOIN CLientInfos ON Clients.infoID = ClientInfos.id`
-        return this.db.prepare(request).all() as Omit<
-            Client & ClientInfo,
-            'infoID' | 'id'
-        >[]
+        const rawData = this.db.prepare(request).all() as Record<string, any>[]
+        return rawData.map(data =>
+            this.parseData<Omit<Client & ClientInfo, 'infoID' | 'id'>>(data, [
+                'dataKeys',
+                'actions'
+            ])
+        )
     }
 
     /**
@@ -247,16 +298,23 @@ class ServerDatabase {
             Omit<Client & ClientInfo, 'infoID' | 'id'>[]
         > = {}
         for (const { name } of groupNames) {
-            groups[name] = this.db
+            const rawData = this.db
                 .prepare(
                     `SELECT Clients.name, Clients.hidden, ClientInfos.type, ClientInfos.dataType, ClientInfos.dataUnit, ClientInfos.dataKeys, ClientInfos.actions
-                        FROM GroupMembers 
-                        INNER JOIN Clients ON Clients.name = GroupMembers.clientName
-                        INNER JOIN CLientInfos ON Clients.infoID = ClientInfos.id 
-                        WHERE GroupMembers.groupName = ?
-                        `
+                FROM GroupMembers 
+                INNER JOIN Clients ON Clients.name = GroupMembers.clientName
+                INNER JOIN CLientInfos ON Clients.infoID = ClientInfos.id 
+                WHERE GroupMembers.groupName = ?
+                `
                 )
-                .all(name) as Omit<Client & ClientInfo, 'infoID' | 'id'>[]
+                .all(name) as Record<string, any>[]
+
+            groups[name] = rawData.map(data =>
+                this.parseData<Omit<Client & ClientInfo, 'infoID' | 'id'>>(
+                    data,
+                    ['dataKeys', 'actions']
+                )
+            )
         }
         return groups
     }
@@ -273,10 +331,16 @@ class ServerDatabase {
                         INNER JOIN Clients ON GroupMembers.clientName = Clients.name
                         INNER JOIN ClientInfos ON ClientInfos.id = Clients.infoID
                         WHERE GroupMembers.groupName = ?`
-        return this.db.prepare(request).all(name) as Omit<
-            Client & ClientInfo,
-            'infoID' | 'id'
+        const rawData = this.db.prepare(request).all(name) as Record<
+            string,
+            any
         >[]
+        return rawData.map(data =>
+            this.parseData<Omit<Client & ClientInfo, 'infoID' | 'id'>[]>(data, [
+                'dataKeys',
+                'actions'
+            ])
+        )
     }
 
     /**
@@ -309,72 +373,101 @@ class ServerDatabase {
         this.db.prepare(request).run(groupName, clientName)
         return true
     }
+
+    /**
+     * Add data to client (update previous one if client is an instant-grapher)
+     * @param source the name of the source client
+     * @param data the data to add
+     * @returns true if operation succeeded, false otherwise
+     */
+    addData(source: Client['name'], data: Data['data']) {
+        const client = this.getClientByName(source)
+        if (!client) return false
+        if (client.type == 'instant grapher') {
+            if (this.exists('Data', { source })) {
+                this.db
+                    .prepare(
+                        'UPDATE Data SET data = ?, time = ? WHERE source = ?'
+                    )
+                    .run(JSON.stringify(data), new Date().toISOString(), source)
+            } else {
+                this.insert('Data', {
+                    source,
+                    data: JSON.stringify(data),
+                    time: new Date().toISOString()
+                })
+            }
+        } else {
+            this.insert('Data', {
+                source,
+                data: JSON.stringify(data),
+                time: new Date().toISOString()
+            })
+            const count = this.count('Data', { source })
+            if (count > MAX_COUNT) {
+                this.db
+                    .prepare(
+                        'DELETE FROM TimeData WHERE id IN (SELECT id FROM TimeData WHERE source = ? ORDER BY id ASC LIMIT ?)'
+                    )
+                    .run(source, count - MAX_COUNT)
+            }
+        }
+        return true
+    }
+
+    /**
+     * Get data (array or single object) from a client
+     * @param source name of the client
+     * @returns the data from the client (single data if client is an instant grapher, an aray otherwise)
+     */
+    getDataFromClient(source: Client['name'], maxCount: number = 100) {
+        const client = this.getClientByName(source)
+        if (!client) return false
+        const rawData = this.db
+            .prepare(`SELECT data, time FROM Data WHERE source = ? LIMIT ?`)
+            .all(source, maxCount) as Record<string, any>[]
+        if (client.type == 'instant grapher') {
+            return this.parseData<Omit<Data, 'id' | 'source'>>(rawData[0], [
+                'data'
+            ])
+        } else {
+            return rawData.map(data =>
+                this.parseData<Omit<Data, 'id' | 'source'>>(data, ['data'])
+            )
+        }
+    }
+
+    /**
+     * Create a new account
+     * @param username username of the account
+     * @param password hashed password of the account
+     * @returns true if operation succeeded, false otherwise
+     */
+    createAccount(
+        username: Account['username'],
+        password: Account['password']
+    ) {
+        if (this.exists('Accounts', { username })) return false
+        this.insert('Accounts', { username, password })
+        return true
+    }
+
+    /**
+     * check if an account exists
+     * @param username username of the account
+     * @returns true if account exists, false otherwise
+     */
+    accountExists(username: Account['username']) {
+        return this.exists('Accounts', { username })
+    }
+
+    /**
+     * try to login to an account (does username and password match)
+     * @param username username of account to login to
+     * @param password hashed password of the account to login to
+     * @returns true if password is correct, false otherwise
+     */
+    login(username: Account['username'], password: Account['password']) {
+        return this.exists('Accounts', { username, password })
+    }
 }
-
-const test = new ServerDatabase('test.db')
-test.createClient(
-    'client1',
-    false,
-    'feur',
-    'quoicoubeh',
-    'FE',
-    '["caca","pipi"]',
-    undefined
-)
-test.createClient(
-    'client2',
-    false,
-    'feur',
-    'quoicoubeh',
-    'FE',
-    '["caca","pipi"]',
-    undefined
-)
-test.createClient(
-    'client3',
-    false,
-    'feur',
-    'quoicoubeh',
-    'FE',
-    '["caca","pipi"]',
-    undefined
-)
-test.createClient(
-    'client4',
-    false,
-    'feur',
-    'quoicoubeh',
-    'FE',
-    '["caca","pipi"]',
-    undefined
-)
-test.createClient(
-    'client5',
-    false,
-    'feur',
-    'quoicoubeh',
-    'FE',
-    '["caca","pipi"]',
-    undefined
-)
-test.createClient(
-    'client6',
-    false,
-    'feur',
-    'quoicoubeh',
-    'FE',
-    '["caca","pipi"]',
-    undefined
-)
-
-test.createGroup('group1')
-test.createGroup('group2')
-test.createGroup('group3')
-test.addClientToGroup('group1', 'client1')
-test.addClientToGroup('group1', 'client2')
-test.addClientToGroup('group2', 'client3')
-test.addClientToGroup('group2', 'client4')
-test.addClientToGroup('group3', 'client5')
-test.addClientToGroup('group3', 'client6')
-
-console.log(test.getGroups())
