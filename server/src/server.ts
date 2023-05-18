@@ -74,6 +74,9 @@ const WEBSERVERPORT = SOCKETPORT + 1
                     payload.dataType.actions
                 )
                 connectedClients.push({ name: payload.name, ws })
+                console.log(
+                    `client "${payload.name}" connected (type : ${payload.clientType})`
+                )
             } else if (message.action === 'data') {
                 const payload = dataPayloadSchema.parse(message.payload)
                 const clientSession = connectedClients.find(e => e.ws === ws)
