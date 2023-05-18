@@ -30,9 +30,11 @@ export default function handler(
     const clientSession = connectedClients.find(e => e.name === client.name)
     if (!clientSession) return res.status(404).send('client is not connected')
 
-    clientSession.ws.send({
-        action: body.action,
-        data: body.data
-    })
+    clientSession.ws.send(
+        JSON.stringify({
+            action: body.action,
+            data: body.data
+        })
+    )
     res.sendStatus(200)
 }
