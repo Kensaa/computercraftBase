@@ -376,8 +376,11 @@ export class ServerDatabase {
         const client = this.getClientByName(source)
         if (!client) return []
         const rawData = this.db
-            .prepare('SELECT data, time FROM Data WHERE source = ? LIMIT ?')
-            .all(source, maxCount) as Record<string, unknown>[]
+            .prepare(
+                'SELECT data, time FROM Data WHERE source = ? ORDER BY time DESC LIMIT ?'
+            )
+            .all(source, maxCount)
+            .reverse() as Record<string, unknown>[]
         if (client.type === 'instant grapher') {
             return [this.parseData<Data>(rawData[0], ['data'])]
         } else {
