@@ -1,5 +1,5 @@
 import React, { ReactElement, useEffect } from 'react'
-import { Redirect, Route } from 'wouter'
+import { Redirect, Route, Switch } from 'wouter'
 import Home from './pages/Home'
 
 import authStore from './stores/auth'
@@ -46,17 +46,19 @@ export default function App() {
     }, [auth.token])
 
     return (
-        <>
+        <Switch>
             <Route path='/'>
                 <LoginWall>
                     <Home />
                 </LoginWall>
             </Route>
+
             <Route path='/login'>
                 <LoginWall reversed redirect='/'>
                     <Login />
                 </LoginWall>
             </Route>
+
             <Route path='/show/:input'>
                 {params => (
                     <LoginWall>
@@ -64,11 +66,9 @@ export default function App() {
                     </LoginWall>
                 )}
             </Route>
-            <Route path='/:address*'>
-                <LoginWall>
-                    <Home />
-                </LoginWall>
+            <Route>
+                <Redirect to='/' />
             </Route>
-        </>
+        </Switch>
     )
 }
