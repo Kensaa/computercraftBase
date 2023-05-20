@@ -128,9 +128,10 @@ export class ServerDatabase {
             const v = typeof value === 'number' ? value : `'${value}'`
             return `${key} = ${v}`
         })
-        const request = `SELECT * FROM ${table} WHERE ${conditions.join(
-            ' AND '
-        )}`
+        const conditionString = ` WHERE ${conditions.join(' AND ')}`
+        const request = `SELECT * FROM ${table}${
+            conditions.length > 0 ? conditionString : ''
+        }`
         return this.db.prepare(request).all().length
     }
 

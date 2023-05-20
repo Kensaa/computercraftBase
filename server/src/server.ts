@@ -31,7 +31,7 @@ import {
     registerPayloadSchema,
     wsMessageSchema
 } from './types'
-import { randomBytes } from 'crypto'
+import { randomBytes, createHash } from 'crypto'
 
 const WEBSERVERPORT = 3695
 
@@ -50,6 +50,17 @@ const WEBSERVERPORT = 3695
     const database = new ServerDatabase('database.db')
     const connectedClients: { name: string; ws: WebSocket }[] = []
     const authSecret = randomBytes(64).toString('hex')
+
+    const username = 'admin'
+    const password = 'admin'
+    const hashedPassword = createHash('sha256').update(password).digest('hex')
+    if (database.count('Accounts', {}) === 0) {
+        database.createAccount(username, hashedPassword)
+    } else if (database.exists('Accounts', { username: 'admin' })) {
+        database.db
+            .prepare('DELETE FROM Accounts WHERE username = ? AND password = ?')
+            .run(username, hashedPassword)
+    }
 
     wsServer.on('connection', ws => {
         ws.on('message', async data => {
@@ -110,24 +121,23 @@ const WEBSERVERPORT = 3695
         })
     )
 
-    expressApp.get('/api/client/fetch', authMiddleware, clientFetch)
-    expressApp.get('/api/client/all', authMiddleware, clientAll)
-    expressApp.post('/api/client/action', authMiddleware, clientAction)
-    expressApp.post('/api/account/register', accountRegister)
     expressApp.post('/api/account/login', accountLogin)
-    expressApp.get('/api/account/me', authMiddleware, accountMe)
 
-    expressApp.get('/api/group/all', authMiddleware, groupAll)
-    expressApp.get('/api/group/get', authMiddleware, groupGet)
-    expressApp.post('/api/group/create', authMiddleware, groupCreate)
-    expressApp.post('/api/group/remove', authMiddleware, groupRemove)
-    expressApp.post('/api/group/addClient', authMiddleware, groupAddClient)
-    expressApp.post(
-        '/api/group/removeClient',
-        authMiddleware,
-        groupRemoveClient
-    )
-    expressApp.post('/api/group/setOrders', authMiddleware, groupSetOrders)
+    expressApp.use(authMiddleware)
+
+    expressApp.get('/api/client/fetch', clientFetch)
+    expressApp.get('/api/client/all', clientAll)
+    expressApp.post('/api/client/action', clientAction)
+    expressApp.post('/api/account/register', accountRegister)
+    expressApp.get('/api/account/me', accountMe)
+
+    expressApp.get('/api/group/all', groupAll)
+    expressApp.get('/api/group/get', groupGet)
+    expressApp.post('/api/group/create', groupCreate)
+    expressApp.post('/api/group/remove', groupRemove)
+    expressApp.post('/api/group/addClient', groupAddClient)
+    expressApp.post('/api/group/removeClient', groupRemoveClient)
+    expressApp.post('/api/group/setOrders', groupSetOrders)
 
     expressApp.use(errorMiddleware)
 })()
