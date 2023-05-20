@@ -8,3 +8,24 @@ export interface Client {
     dataKeys?: string[]
     actions?: string[]
 }
+
+export type GroupMember = Client & {
+    clientOrder: number
+    additionalData: Record<string, any>
+}
+
+export interface Datapoint {
+    data: Record<string, number>
+    time: string
+}
+
+export type Data = Record<string, Datapoint[]>
+
+export interface Group {
+    name: string
+}
+
+export interface DataContext {
+    clients: Client[]
+    data: Data
+}

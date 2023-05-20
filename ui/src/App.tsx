@@ -1,13 +1,14 @@
-import React, { ReactElement } from 'react'
-import { Redirect, Route } from 'wouter'
+import React, { ReactElement, useEffect } from 'react'
+import { Redirect, Route, Switch } from 'wouter'
 import Home from './pages/Home'
 
-import auth from './stores/auth'
+import authStore from './stores/auth'
+import configStore from './stores/config'
 import Login from './pages/Login'
 
-import TimeGraph from './pages/clientPages/TimeGraph'
-import InsantGraph from './pages/clientPages/InsantGraph'
-import ActuatorPage from './pages/clientPages/ActuatorPage'
+import Groups from './pages/groups/Groups'
+import ShowClients from './pages/show/ShowClients'
+import ShowGroup from './pages/show/ShowGroup'
 
 interface LoginWallProps {
     children: JSX.Element
@@ -19,46 +20,69 @@ const LoginWall = ({
     reversed = false,
     redirect = '/login'
 }: LoginWallProps) => {
-    let autorized = auth(state => state.isConnected)
+    let autorized = authStore(state => state.isConnected)
     if (reversed) autorized = !autorized
     return autorized ? children : <Redirect to={redirect} />
 }
 
 export default function App() {
+    const auth = authStore(state => ({
+        isConnected: state.isConnected,
+        token: state.token,
+        logout: state.logout
+    }))
+    const config = configStore(state => ({ ...state }))
+
+    useEffect(() => {
+        if (!auth.isConnected) return
+        fetch(`${config.address}/api/account/me`, {
+            method: 'GET',
+            headers: { Authorization: `Bearer ${auth.token}` }
+        }).then(res => {
+            if (res) {
+                if (!res.ok) {
+                    auth.logout()
+                }
+            }
+        })
+    }, [auth.token])
+
     return (
-        <>
+        <Switch>
             <Route path='/'>
                 <LoginWall>
                     <Home />
                 </LoginWall>
             </Route>
+            <Route path='/groups'>
+                <LoginWall>
+                    <Groups />
+                </LoginWall>
+            </Route>
+
             <Route path='/login'>
                 <LoginWall reversed redirect='/'>
                     <Login />
                 </LoginWall>
             </Route>
 
-            <Route path='/client/time/:input'>
+            <Route path='/showClients/:input'>
                 {params => (
                     <LoginWall>
-                        <TimeGraph input={params.input} />
+                        <ShowClients input={params.input} />
                     </LoginWall>
                 )}
             </Route>
-            <Route path='/client/instant/:input'>
+            <Route path='/showGroup/:input'>
                 {params => (
                     <LoginWall>
-                        <InsantGraph input={params.input} />
+                        <ShowGroup input={params.input} />
                     </LoginWall>
                 )}
             </Route>
-            <Route path='/client/actuator/:input'>
-                {params => (
-                    <LoginWall>
-                        <ActuatorPage input={params.input} />
-                    </LoginWall>
-                )}
+            <Route>
+                <Redirect to='/' />
             </Route>
-        </>
+        </Switch>
     )
 }

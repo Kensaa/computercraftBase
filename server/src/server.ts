@@ -12,8 +12,6 @@ import {
 import clientFetch from './endpoints/api/client/fetch'
 import clientAll from './endpoints/api/client/all'
 import clientAction from './endpoints/api/client/action'
-import clientAddToGroup from './endpoints/api/client/addToGroup'
-import clientRemoveFromGroup from './endpoints/api/client/removeFromGroup'
 
 import accountRegister from './endpoints/api/account/register'
 import accountLogin from './endpoints/api/account/login'
@@ -23,6 +21,9 @@ import groupAll from './endpoints/api/group/all'
 import groupGet from './endpoints/api/group/get'
 import groupCreate from './endpoints/api/group/create'
 import groupRemove from './endpoints/api/group/remove'
+import groupAddClient from './endpoints/api/group/addClient'
+import groupRemoveClient from './endpoints/api/group/removeClient'
+import groupSetOrders from './endpoints/api/group/setOrders'
 
 import {
     dataPayloadSchema,
@@ -63,11 +64,9 @@ const WEBSERVERPORT = SOCKETPORT + 1
                         1
                     )
                 }
-                let hidden = false
-                if (payload.hidden) hidden = payload.hidden
                 database.createClient(
                     payload.name,
-                    hidden,
+                    payload.hidden === undefined ? false : payload.hidden,
                     payload.clientType,
                     payload.dataType.type,
                     payload.dataType.unit,
@@ -111,16 +110,6 @@ const WEBSERVERPORT = SOCKETPORT + 1
     expressServer.get('/api/client/fetch', authMiddleware, clientFetch)
     expressServer.get('/api/client/all', authMiddleware, clientAll)
     expressServer.post('/api/client/action', authMiddleware, clientAction)
-    expressServer.post(
-        '/api/client/addToGroup',
-        authMiddleware,
-        clientAddToGroup
-    )
-    expressServer.post(
-        '/api/client/removeFromGroup',
-        authMiddleware,
-        clientRemoveFromGroup
-    )
     expressServer.post('/api/account/register', accountRegister)
     expressServer.post('/api/account/login', accountLogin)
     expressServer.get('/api/account/me', authMiddleware, accountMe)
@@ -129,6 +118,13 @@ const WEBSERVERPORT = SOCKETPORT + 1
     expressServer.get('/api/group/get', authMiddleware, groupGet)
     expressServer.post('/api/group/create', authMiddleware, groupCreate)
     expressServer.post('/api/group/remove', authMiddleware, groupRemove)
+    expressServer.post('/api/group/addClient', authMiddleware, groupAddClient)
+    expressServer.post(
+        '/api/group/removeClient',
+        authMiddleware,
+        groupRemoveClient
+    )
+    expressServer.post('/api/group/setOrders', authMiddleware, groupSetOrders)
 
     expressServer.use(errorMiddleware)
 })()

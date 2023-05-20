@@ -1,7 +1,7 @@
-import create from 'zustand'
+import { create } from 'zustand'
 
 const address = 'http://localhost:3695'
-const maxSlectedClient = 4
+const maxSelectedClient = 9999
 const fetchOptions = {
     method: 'GET',
     headers: {
@@ -55,13 +55,13 @@ const plotColors = [
 
 interface configType {
     address: string
-    maxSlectedClient: number
+    maxSelectedClient: number
     fetchOptions: Record<string, any>
     plotConfig: Record<string, any>
     plotColors: string[]
 
     setAddress: (address: string) => void
-    setMaxSlectedClient: (maxSlectedClient: number) => void
+    setMaxSelectedClient: (maxSelectedClient: number) => void
     setFetchOptions: (fetchOptions: Record<string, any>) => void
     setPlotConfig: (plotConfig: Record<string, any>) => void
     setPlotColors: (plotColors: string[]) => void
@@ -69,12 +69,12 @@ interface configType {
 
 export default create<configType>(set => ({
     address,
-    maxSlectedClient,
+    maxSelectedClient,
     fetchOptions,
     plotConfig,
     plotColors,
     setAddress: address => set({ address }),
-    setMaxSlectedClient: maxSlectedClient => set({ maxSlectedClient }),
+    setMaxSelectedClient: maxSelectedClient => set({ maxSelectedClient }),
     setFetchOptions: fetchOptions => set({ fetchOptions }),
     setPlotConfig: plotConfig => set({ plotConfig }),
     setPlotColors: plotColors => set({ plotColors })
