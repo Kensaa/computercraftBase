@@ -244,7 +244,7 @@ export class ServerDatabase {
      * @returns true if operation succeeded, false otherwise
      */
     removeGroup(name: Group['name']): boolean {
-        if (this.groupExists(name)) return false
+        if (!this.groupExists(name)) return false
         const request1 = 'DELETE FROM GroupMembers WHERE groupName = ?'
         const request2 = 'DELETE FROM Groups WHERE name = ?'
         this.db.prepare(request1).run(name)

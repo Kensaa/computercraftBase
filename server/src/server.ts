@@ -60,7 +60,8 @@ const WEBSERVERPORT = SOCKETPORT + 1
                 if (clientSession) {
                     clientSession.ws.close()
                     connectedClients.splice(
-                        connectedClients.indexOf(clientSession)
+                        connectedClients.indexOf(clientSession),
+                        1
                     )
                 }
                 database.createClient(
