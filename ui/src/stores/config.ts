@@ -1,4 +1,4 @@
-import create from 'zustand'
+import { create } from 'zustand'
 
 const address = 'http://localhost:3695'
 const maxSelectedClient = 9999
