@@ -13,12 +13,15 @@ export default function Home() {
     const [, setLocation] = useLocation()
 
     const onClientValidate = (selectedClients: Client[]) => {
-        const paramString = selectedClients.map(e => e.name).join(',')
-        setLocation(`/show/${paramString}`)
+        const paramString = selectedClients
+            .map(e => encodeURI(e.name))
+            .join(',')
+        setLocation(`/showClients/${paramString}`)
     }
 
     const onGroupValidate = (selectedGroup: Group) => {
         //TODO: send to show page for groups
+        setLocation(`/showGroup/${encodeURI(selectedGroup.name)}`)
     }
 
     return (

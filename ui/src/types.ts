@@ -24,3 +24,8 @@ export type Data = Record<string, Datapoint[]>
 export interface Group {
     name: string
 }
+
+export interface DataContext {
+    clients: Client[]
+    data: Data
+}

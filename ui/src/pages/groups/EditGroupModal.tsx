@@ -1,13 +1,10 @@
 import React, { useEffect, useState } from 'react'
-import AppNavbar from '../../components/AppNavbar'
-import GroupSearch from '../../components/GroupSearch'
-import { Alert, Button, Form, Modal, Tab, Tabs } from 'react-bootstrap'
+import { Button, Modal, Tab, Tabs } from 'react-bootstrap'
 import configStore from '../../stores/config'
 import authStore from '../../stores/auth'
 import { Client, Group, GroupMember } from '../../types'
 import { queryFetch } from '../../utils'
 import ClientSearch from '../../components/ClientSearch'
-import CreateGroupModal from './CreateGroupModal'
 import {
     DragDropContext,
     Draggable,

@@ -6,8 +6,9 @@ import authStore from './stores/auth'
 import configStore from './stores/config'
 import Login from './pages/Login'
 
-import Show from './pages/Show'
 import Groups from './pages/groups/Groups'
+import ShowClients from './pages/show/ShowClients'
+import ShowGroup from './pages/show/ShowGroup'
 
 interface LoginWallProps {
     children: JSX.Element
@@ -65,10 +66,17 @@ export default function App() {
                 </LoginWall>
             </Route>
 
-            <Route path='/show/:input'>
+            <Route path='/showClients/:input'>
                 {params => (
                     <LoginWall>
-                        <Show input={params.input} />
+                        <ShowClients input={params.input} />
+                    </LoginWall>
+                )}
+            </Route>
+            <Route path='/showGroup/:input'>
+                {params => (
+                    <LoginWall>
+                        <ShowGroup input={params.input} />
                     </LoginWall>
                 )}
             </Route>

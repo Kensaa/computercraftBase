@@ -24,22 +24,24 @@ ChartJS.register(
     ArcElement
 )
 import configStore from '../../stores/config'
-import { Client } from '../../types'
+import { Client, DataContext } from '../../types'
 
-import { DataContext, dataContext } from '../../pages/Show'
+import { dataContext } from '../../pages/show/ShowClients'
 import { Spinner } from 'react-bootstrap'
 
 interface PlotProps {
     client: Client
+    context: React.Context<DataContext>
 }
 
-export default function Plot({ client }: PlotProps) {
+export default function Plot({ client, context }: PlotProps) {
     const config = configStore(state => ({ ...state }))
-    const clientData = useContext(dataContext).data[client.name]
+    const clientData = useContext(context).data[client.name]
     if (!client.dataKeys) {
         //error
         return <div>ERROR</div>
     }
+    // console.log(useContext(dataContext))
 
     const plotData = useMemo(() => {
         const keys = client.dataKeys

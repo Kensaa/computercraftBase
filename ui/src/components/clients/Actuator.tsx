@@ -3,7 +3,7 @@ import { Button, ListGroup } from 'react-bootstrap'
 
 import authStore from '../../stores/auth'
 import configStore from '../../stores/config'
-import { Client } from '../../types'
+import { Client, DataContext } from '../../types'
 
 interface ActuatorProps {
     client: Client

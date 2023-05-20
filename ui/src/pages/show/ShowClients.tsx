@@ -1,18 +1,14 @@
 import React, { createContext, useEffect, useState } from 'react'
-import { Client, Data } from '../types'
+import { Client, Data, DataContext } from '../../types'
 import { useInterval } from 'usehooks-ts'
 
-import configStore from '../stores/config'
-import authStore from '../stores/auth'
-import { queryFetch } from '../utils'
-import AppNavbar from '../components/AppNavbar'
-import Plot from '../components/clients/Plot'
-import Actuator from '../components/clients/Actuator'
+import configStore from '../../stores/config'
+import authStore from '../../stores/auth'
+import { queryFetch } from '../../utils'
+import AppNavbar from '../../components/AppNavbar'
+import Plot from '../../components/clients/Plot'
+import Actuator from '../../components/clients/Actuator'
 
-export interface DataContext {
-    clients: Client[]
-    data: Data
-}
 export const dataContext = createContext<DataContext>({
     clients: [],
     data: {}
@@ -24,7 +20,7 @@ interface ShowProps {
 
 const types = ['time-based grapher', 'instant grapher', 'actuator']
 
-export default function Show({ input }: ShowProps) {
+export default function ShowClients({ input }: ShowProps) {
     const [clients, setClients] = useState<Client[]>([])
     const [data, setData] = useState<Data>({})
 
@@ -78,7 +74,13 @@ export default function Show({ input }: ShowProps) {
                     {clients.map((client, index) => {
                         const { type } = client
                         if (type === 'time-based grapher') {
-                            return <Plot key={index} client={client} />
+                            return (
+                                <Plot
+                                    context={dataContext}
+                                    key={index}
+                                    client={client}
+                                />
+                            )
                         } else if (type === 'instant grapher') {
                             return <div className=''></div>
                         } else if (type === 'actuator') {
