@@ -74,7 +74,9 @@ export default function Plot({ client }: PlotProps) {
             {plotData ? (
                 <Line data={plotData} options={plotOptions} />
             ) : (
-                <Spinner animation='border' />
+                <div className='h-100 d-flex justify-content-center align-items-center'>
+                    <Spinner animation='border' />
+                </div>
             )}
         </div>
     )
