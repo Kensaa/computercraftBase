@@ -48,10 +48,6 @@ export default function ShowGroup({ input }: ShowProps) {
             .then(members => setClients(members))
     }, [input])
 
-    useEffect(() => {
-        console.log(data)
-    }, [data])
-
     useInterval(() => {
         if (clients.length === 0) return
         queryFetch(

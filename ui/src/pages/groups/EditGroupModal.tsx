@@ -38,6 +38,18 @@ export default function EditGroupModal({ group, hide }: EditGroupModalProps) {
             .then(data => setGroupMembers(data))
     }, [group])
 
+    const deleteGroup = () => {
+        fetch(`${config.address}/api/group/remove`, {
+            method: 'POST',
+            headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ name: group.name })
+        })
+        hide()
+    }
+
     return (
         <Modal
             show={group !== undefined}
@@ -46,6 +58,13 @@ export default function EditGroupModal({ group, hide }: EditGroupModalProps) {
         >
             <Modal.Header closeButton>
                 <Modal.Title>Editing group "{group.name}"</Modal.Title>
+                <Button
+                    onClick={deleteGroup}
+                    variant='outline-danger'
+                    style={{ marginLeft: 'auto' }}
+                >
+                    Delete group
+                </Button>
             </Modal.Header>
             <Modal.Body>
                 <Tabs fill>
