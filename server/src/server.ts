@@ -63,11 +63,9 @@ const WEBSERVERPORT = SOCKETPORT + 1
                         1
                     )
                 }
-                let hidden = false
-                if (payload.hidden) hidden = payload.hidden
                 database.createClient(
                     payload.name,
-                    hidden,
+                    payload.hidden === undefined ? false : payload.hidden,
                     payload.clientType,
                     payload.dataType.type,
                     payload.dataType.unit,

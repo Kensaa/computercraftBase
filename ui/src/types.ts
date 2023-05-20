@@ -8,3 +8,9 @@ export interface Client {
     dataKeys?: string[]
     actions?: string[]
 }
+export interface Datapoint {
+    data: Record<string, number>
+    time: string
+}
+
+export type Data = Record<string, Datapoint[]>

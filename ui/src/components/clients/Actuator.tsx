@@ -1,17 +1,15 @@
 import React, { useState } from 'react'
 import { Button, ListGroup } from 'react-bootstrap'
 
-import authStore from '../stores/auth'
-import configStore from '../stores/config'
-import { Client } from '../types'
+import authStore from '../../stores/auth'
+import configStore from '../../stores/config'
+import { Client } from '../../types'
 
 interface ActuatorProps {
     client: Client
-    width: string
-    height: string
 }
 
-export default function Actuator({ client, width, height }: ActuatorProps) {
+export default function Actuator({ client }: ActuatorProps) {
     const [selected, setSelected] = useState<number>()
     const token = authStore(state => state.token)
     const config = configStore(state => ({ ...state }))
@@ -35,8 +33,8 @@ export default function Actuator({ client, width, height }: ActuatorProps) {
 
     return (
         <div
-            style={{ maxWidth: width, maxHeight: height, padding: '0.5rem' }}
-            className='m-3 d-flex flex-column align-items-center border'
+            style={{ width: '10%', height: '25%', padding: '0.5rem' }}
+            className='m-2 d-flex flex-column align-items-center border'
         >
             <h3>{client.name}</h3>
             <div

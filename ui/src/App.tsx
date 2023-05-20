@@ -5,9 +5,7 @@ import Home from './pages/Home'
 import auth from './stores/auth'
 import Login from './pages/Login'
 
-import TimeGraph from './pages/clientPages/TimeGraph'
-import InsantGraph from './pages/clientPages/InsantGraph'
-import ActuatorPage from './pages/clientPages/ActuatorPage'
+import Show from './pages/Show'
 
 interface LoginWallProps {
     children: JSX.Element
@@ -37,25 +35,10 @@ export default function App() {
                     <Login />
                 </LoginWall>
             </Route>
-
-            <Route path='/client/time/:input'>
+            <Route path='/show/:input'>
                 {params => (
                     <LoginWall>
-                        <TimeGraph input={params.input} />
-                    </LoginWall>
-                )}
-            </Route>
-            <Route path='/client/instant/:input'>
-                {params => (
-                    <LoginWall>
-                        <InsantGraph input={params.input} />
-                    </LoginWall>
-                )}
-            </Route>
-            <Route path='/client/actuator/:input'>
-                {params => (
-                    <LoginWall>
-                        <ActuatorPage input={params.input} />
+                        <Show input={params.input} />
                     </LoginWall>
                 )}
             </Route>

@@ -77,7 +77,7 @@ export default function Home() {
         if (selectedClient.includes(index)) {
             setSelectedClient(selectedClient.filter(e => e !== index))
         } else {
-            if (selectedClient.length >= config.maxSlectedClient) return
+            if (selectedClient.length >= config.maxSelectedClient) return
             setSelectedClient([...selectedClient, index])
         }
     }
@@ -87,19 +87,7 @@ export default function Home() {
         const paramString = selectedClient
             .map(e => shownClients[e].name)
             .join(',')
-        let location = ''
-        switch (shownClients[selectedClient[0]].type) {
-            case 'time-based grapher':
-                location = 'time'
-                break
-            case 'instant grapher':
-                location = 'instant'
-                break
-            case 'actuator':
-                location = 'actuator'
-        }
-
-        setLocation(`/client/${location}/${paramString}`)
+        setLocation(`/show/${paramString}`)
     }
     return (
         <div className='w-100 h-100 d-flex flex-column'>
@@ -143,12 +131,13 @@ export default function Home() {
                         <tbody>
                             {shownClients.map((client, index) => {
                                 let selected = selectedClient.includes(index)
-                                let disabled =
+                                /*let disabled =
                                     selectedClient.length > 0 &&
                                     client.type !==
-                                        shownClients[selectedClient[0]].type
+                                        shownClients[selectedClient[0]].type*/
+                                let disabled = false
                                 return (
-                                    <TableRow
+                                    <ClientRow
                                         client={client}
                                         key={index}
                                         onClick={() => clientClicked(index)}
@@ -172,18 +161,18 @@ export default function Home() {
     )
 }
 
-interface TableRowProps {
+interface ClientRowProps {
     client: Client
     selected?: boolean
     disabled?: boolean
     onClick: () => void
 }
-function TableRow({
+function ClientRow({
     client,
     selected = false,
     disabled = false,
     onClick
-}: TableRowProps) {
+}: ClientRowProps) {
     const typeToString = (type: Client['type']) => {
         let typeString = ''
         switch (type) {
