@@ -14,21 +14,18 @@ export default function AppNavbar() {
     return (
         <>
             <Navbar bg='light'>
-                <Container fluid className=''>
+                <Container fluid>
                     <Navbar.Brand as={Link} to='/'>
                         Base
                     </Navbar.Brand>
                     <Navbar.Toggle aria-controls='basic-navbar-nav' />
-
-                    <Nav className='me-auto'>
-                        {/*<NavDropdown title="time-based">
-                        <NavDropdown.Item as={Link} to='/energy'>Energy</NavDropdown.Item>
-                        <NavDropdown.Item as={Link} to='/fluid'>Fluid</NavDropdown.Item>
-                    </NavDropdown>
-                    <NavDropdown title="instant data">
-                        <NavDropdown.Item as={Link} to='/state'>State</NavDropdown.Item>
-                    </NavDropdown>*/}
+                    <Nav>
+                        <Nav.Link as={Link} to='/groups'>
+                            Groups
+                        </Nav.Link>
                     </Nav>
+                    <Nav className='me-auto' />
+
                     <Nav>
                         {!isConnected ? (
                             <Nav.Link as={Link} to='/login'>

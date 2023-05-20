@@ -4,16 +4,23 @@ import { Button, Form, Table } from 'react-bootstrap'
 import authStore from '../stores/auth'
 import configStore from '../stores/config'
 import { Group } from '../types'
+import { Plus, SlidersHorizontal } from 'lucide-react'
 
 interface GroupSearchProps {
     onValidate: (selectedGroup: Group) => void
+    addButton?: boolean
+    onAddButtonClicked?: () => void
 }
 
-export default function GroupSearch({ onValidate }: GroupSearchProps) {
+export default function GroupSearch({
+    onValidate,
+    addButton = false,
+    onAddButtonClicked
+}: GroupSearchProps) {
     const [searchValue, setSearchValue] = useState('')
 
     const [groups, setGroups] = useState<Group[]>([])
-    const [selectedGroup, setSelectedGroup] = useState<number>(-1)
+    const [selectedGroup, setSelectedGroup] = useState<Group>()
     const [shownGroups, setShownGroups] = useState<Group[]>([])
 
     const config = configStore(state => ({ ...state }))
@@ -52,18 +59,18 @@ export default function GroupSearch({ onValidate }: GroupSearchProps) {
         }
     }, [groups, searchValue])
 
-    const groupClicked = (index: number) => {
-        if (selectedGroup === index) {
-            setSelectedGroup(-1)
+    const groupClicked = (group: Group) => {
+        if (selectedGroup === group) {
+            setSelectedGroup(undefined)
         } else {
-            setSelectedGroup(index)
+            setSelectedGroup(group)
         }
     }
 
     const onBtnPressed = () => {
-        if (selectedGroup === -1) return
-        onValidate(shownGroups[selectedGroup])
-        setSelectedGroup(-1)
+        if (!selectedGroup) return
+        onValidate(selectedGroup)
+        setSelectedGroup(undefined)
     }
 
     return (
@@ -71,12 +78,24 @@ export default function GroupSearch({ onValidate }: GroupSearchProps) {
             style={{ width: '45%' }}
             className='h-100 d-flex flex-column align-items-center'
         >
-            <Form.Control
-                value={searchValue}
-                onChange={e => setSearchValue(e.target.value)}
-                className=''
-                placeholder='Search for a group'
-            />
+            <div className='d-flex w-100'>
+                <Form.Control
+                    value={searchValue}
+                    onChange={e => setSearchValue(e.target.value)}
+                    className=''
+                    placeholder='Search for a group'
+                />
+                {addButton && (
+                    <Button
+                        variant='outline-primary'
+                        className='ms-1'
+                        onClick={onAddButtonClicked}
+                    >
+                        <Plus size={24} className='w-100 me-1' />
+                        Create Group
+                    </Button>
+                )}
+            </div>
             <Table className='mt-4' bordered hover>
                 <thead>
                     <tr>
@@ -85,13 +104,13 @@ export default function GroupSearch({ onValidate }: GroupSearchProps) {
                 </thead>
                 <tbody>
                     {shownGroups.map((group, index) => {
-                        const selected = selectedGroup === index
+                        const selected = selectedGroup === group
                         const disabled = false
                         return (
                             <GroupRow
                                 group={group}
                                 key={index}
-                                onClick={() => groupClicked(index)}
+                                onClick={() => groupClicked(group)}
                                 selected={selected}
                                 disabled={disabled}
                             />
@@ -100,7 +119,7 @@ export default function GroupSearch({ onValidate }: GroupSearchProps) {
                 </tbody>
             </Table>
             <Button
-                disabled={selectedGroup === -1}
+                disabled={!selectedGroup}
                 variant='outline-primary'
                 onClick={onBtnPressed}
             >

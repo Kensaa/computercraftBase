@@ -8,11 +8,22 @@ import { Client } from '../types'
 
 interface ClientSearchProps {
     onValidate: (selectedClients: Client[]) => void
+    inputClients?: Client[]
+    preSelected?: Client[]
+    ShowDisconnected?: boolean
+    className?: string
 }
 
-export default function ClientSearch({ onValidate }: ClientSearchProps) {
+export default function ClientSearch({
+    onValidate,
+    preSelected,
+    ShowDisconnected = false,
+    className = ''
+}: ClientSearchProps) {
     const [searchValue, setSearchValue] = useState('')
-    const [onlyShowConnected, setOnlyShowConnected] = useState(true)
+    const [onlyShowConnected, setOnlyShowConnected] = useState(
+        !ShowDisconnected
+    )
     const [showHidden, setShowHidden] = useState(false)
 
     const config = configStore(state => ({ ...state }))
@@ -20,8 +31,12 @@ export default function ClientSearch({ onValidate }: ClientSearchProps) {
 
     const [clients, setClients] = useState<Client[]>([])
     const [shownClients, setShownClients] = useState<Client[]>([])
-    const [selectedClients, setSelectedClients] = useState<number[]>([])
-
+    const [selectedClients, setSelectedClients] = useState<Client[]>([])
+    useEffect(() => {
+        if (preSelected && preSelected.length > 0) {
+            setSelectedClients(preSelected)
+        }
+    }, [preSelected])
     useEffect(() => {
         fetch(`${config.address}/api/client/all`, {
             method: 'GET',
@@ -34,7 +49,6 @@ export default function ClientSearch({ onValidate }: ClientSearchProps) {
     }, [config.address, token])
 
     useEffect(() => {
-        setSelectedClients([])
         let before = clients
         if (onlyShowConnected) {
             before = before.filter(e => e.connected)
@@ -62,24 +76,28 @@ export default function ClientSearch({ onValidate }: ClientSearchProps) {
         }
     }, [clients, searchValue, onlyShowConnected, showHidden])
 
-    const clientClicked = (index: number) => {
-        if (selectedClients.includes(index)) {
-            setSelectedClients(selectedClients.filter(e => e !== index))
+    const clientClicked = (client: Client) => {
+        if (selectedClients.filter(e => e.name === client.name).length > 0) {
+            setSelectedClients(
+                selectedClients.filter(e => e.name !== client.name)
+            )
         } else {
             if (selectedClients.length >= config.maxSelectedClient) return
-            setSelectedClients([...selectedClients, index])
+            setSelectedClients([...selectedClients, client])
         }
     }
 
     const onBtnPressed = () => {
         if (selectedClients.length === 0) return
-        onValidate(selectedClients.map(i => shownClients[i]))
+        onValidate(selectedClients)
         setSelectedClients([])
     }
     return (
         <div
             style={{ width: '45%' }}
-            className='h-100 d-flex flex-column align-items-center'
+            className={
+                'h-100 d-flex flex-column align-items-center ' + className
+            }
         >
             <Form.Control
                 value={searchValue}
@@ -112,13 +130,15 @@ export default function ClientSearch({ onValidate }: ClientSearchProps) {
                 </thead>
                 <tbody>
                     {shownClients.map((client, index) => {
-                        const selected = selectedClients.includes(index)
+                        const selected =
+                            selectedClients.filter(e => e.name === client.name)
+                                .length > 0
                         const disabled = false
                         return (
                             <ClientRow
                                 client={client}
                                 key={index}
-                                onClick={() => clientClicked(index)}
+                                onClick={() => clientClicked(client)}
                                 selected={selected}
                                 disabled={disabled}
                             />

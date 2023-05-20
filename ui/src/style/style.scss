@@ -25,3 +25,13 @@ body,
         pointer-events: none;
     }
 }
+
+.large-modal {
+    max-width: 100% !important;
+    width: 80%;
+    height: 90%;
+}
+
+.modal-content {
+    height: 100%;
+}

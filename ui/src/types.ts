@@ -9,6 +9,11 @@ export interface Client {
     actions?: string[]
 }
 
+export type GroupMember = Client & {
+    clientOrder: number
+    additionalData: Record<string, any>
+}
+
 export interface Datapoint {
     data: Record<string, number>
     time: string

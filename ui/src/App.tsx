@@ -7,6 +7,7 @@ import configStore from './stores/config'
 import Login from './pages/Login'
 
 import Show from './pages/Show'
+import Groups from './pages/groups/Groups'
 
 interface LoginWallProps {
     children: JSX.Element
@@ -50,6 +51,11 @@ export default function App() {
             <Route path='/'>
                 <LoginWall>
                     <Home />
+                </LoginWall>
+            </Route>
+            <Route path='/groups'>
+                <LoginWall>
+                    <Groups />
                 </LoginWall>
             </Route>
 

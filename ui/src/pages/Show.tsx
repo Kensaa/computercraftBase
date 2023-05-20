@@ -67,7 +67,6 @@ export default function Show({ input }: ShowProps) {
             .then(data => setData(data))
     }, 1000)
 
-    console.log(clients)
     return (
         <dataContext.Provider value={{ clients, data }}>
             <div className='w-100 h-100 d-flex flex-column'>

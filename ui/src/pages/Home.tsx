@@ -24,13 +24,10 @@ export default function Home() {
     return (
         <div className='w-100 h-100 d-flex flex-column'>
             <AppNavbar />
-            <Container
-                fluid
-                className='m-0 mt-3 p-0 h-100 w-100 d-flex flex-row justify-content-around'
-            >
+            <div className='m-0 mt-3 p-0 h-100 w-100 d-flex flex-row justify-content-around'>
                 <ClientSearch onValidate={onClientValidate} />
                 <GroupSearch onValidate={onGroupValidate} />
-            </Container>
+            </div>
         </div>
     )
 }
