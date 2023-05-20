@@ -32,8 +32,10 @@ import {
     wsMessageSchema
 } from './types'
 import { randomBytes, createHash } from 'crypto'
+import * as dotenv from 'dotenv'
+dotenv.config()
 
-const WEBSERVERPORT = 3695
+const WEB_SERVER_PORT = parseInt(process.env.WEB_SERVER_PORT || '3695')
 
 ;(async () => {
     const expressApp = express()
@@ -43,8 +45,8 @@ const WEBSERVERPORT = 3695
     const httpServer = http.createServer(expressApp)
     const wsServer = new ws.Server({ server: httpServer })
 
-    httpServer.listen(WEBSERVERPORT, () =>
-        console.log(`server started on port ${WEBSERVERPORT}`)
+    httpServer.listen(WEB_SERVER_PORT, () =>
+        console.log(`server started on port ${WEB_SERVER_PORT}`)
     )
 
     const database = new ServerDatabase('database.db')
