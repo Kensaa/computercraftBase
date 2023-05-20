@@ -1,4 +1,4 @@
-local url = "ws://localhost:3694"
+local url = "ws://localhost:3695"
 local ws, err = http.websocket(url)
 if not err == nil then
     print(err)

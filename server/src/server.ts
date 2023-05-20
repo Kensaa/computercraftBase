@@ -8,6 +8,7 @@ import {
     errorMiddleware,
     authMiddleware
 } from './endpoints/middlewares'
+import * as http from 'http'
 
 import clientFetch from './endpoints/api/client/fetch'
 import clientAll from './endpoints/api/client/all'
@@ -31,17 +32,19 @@ import {
     wsMessageSchema
 } from './types'
 import { randomBytes } from 'crypto'
-const SOCKETPORT = 3694
-const WEBSERVERPORT = SOCKETPORT + 1
+
+const WEBSERVERPORT = 3695
 
 ;(async () => {
-    const wsServer = new ws.Server({ port: SOCKETPORT })
-    console.log(`websocket server started on port ${SOCKETPORT}`)
-    const expressServer = express()
-    expressServer.use(express.json())
-    expressServer.use(cors())
-    expressServer.listen(WEBSERVERPORT, () =>
-        console.log(`web server started on port ${WEBSERVERPORT}`)
+    const expressApp = express()
+    expressApp.use(express.json())
+    expressApp.use(cors())
+
+    const httpServer = http.createServer(expressApp)
+    const wsServer = new ws.Server({ server: httpServer })
+
+    httpServer.listen(WEBSERVERPORT, () =>
+        console.log(`server started on port ${WEBSERVERPORT}`)
     )
 
     const database = new ServerDatabase('database.db')
@@ -99,7 +102,7 @@ const WEBSERVERPORT = SOCKETPORT + 1
         })
     })
 
-    expressServer.use(
+    expressApp.use(
         createDataMiddleware({
             database,
             connectedClients,
@@ -107,24 +110,24 @@ const WEBSERVERPORT = SOCKETPORT + 1
         })
     )
 
-    expressServer.get('/api/client/fetch', authMiddleware, clientFetch)
-    expressServer.get('/api/client/all', authMiddleware, clientAll)
-    expressServer.post('/api/client/action', authMiddleware, clientAction)
-    expressServer.post('/api/account/register', accountRegister)
-    expressServer.post('/api/account/login', accountLogin)
-    expressServer.get('/api/account/me', authMiddleware, accountMe)
+    expressApp.get('/api/client/fetch', authMiddleware, clientFetch)
+    expressApp.get('/api/client/all', authMiddleware, clientAll)
+    expressApp.post('/api/client/action', authMiddleware, clientAction)
+    expressApp.post('/api/account/register', accountRegister)
+    expressApp.post('/api/account/login', accountLogin)
+    expressApp.get('/api/account/me', authMiddleware, accountMe)
 
-    expressServer.get('/api/group/all', authMiddleware, groupAll)
-    expressServer.get('/api/group/get', authMiddleware, groupGet)
-    expressServer.post('/api/group/create', authMiddleware, groupCreate)
-    expressServer.post('/api/group/remove', authMiddleware, groupRemove)
-    expressServer.post('/api/group/addClient', authMiddleware, groupAddClient)
-    expressServer.post(
+    expressApp.get('/api/group/all', authMiddleware, groupAll)
+    expressApp.get('/api/group/get', authMiddleware, groupGet)
+    expressApp.post('/api/group/create', authMiddleware, groupCreate)
+    expressApp.post('/api/group/remove', authMiddleware, groupRemove)
+    expressApp.post('/api/group/addClient', authMiddleware, groupAddClient)
+    expressApp.post(
         '/api/group/removeClient',
         authMiddleware,
         groupRemoveClient
     )
-    expressServer.post('/api/group/setOrders', authMiddleware, groupSetOrders)
+    expressApp.post('/api/group/setOrders', authMiddleware, groupSetOrders)
 
-    expressServer.use(errorMiddleware)
+    expressApp.use(errorMiddleware)
 })()
