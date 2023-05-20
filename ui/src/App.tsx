@@ -1,8 +1,9 @@
-import React, { ReactElement } from 'react'
+import React, { ReactElement, useEffect } from 'react'
 import { Redirect, Route } from 'wouter'
 import Home from './pages/Home'
 
-import auth from './stores/auth'
+import authStore from './stores/auth'
+import configStore from './stores/config'
 import Login from './pages/Login'
 
 import Show from './pages/Show'
@@ -17,12 +18,33 @@ const LoginWall = ({
     reversed = false,
     redirect = '/login'
 }: LoginWallProps) => {
-    let autorized = auth(state => state.isConnected)
+    let autorized = authStore(state => state.isConnected)
     if (reversed) autorized = !autorized
     return autorized ? children : <Redirect to={redirect} />
 }
 
 export default function App() {
+    const auth = authStore(state => ({
+        isConnected: state.isConnected,
+        token: state.token,
+        logout: state.logout
+    }))
+    const config = configStore(state => ({ ...state }))
+
+    useEffect(() => {
+        if (!auth.isConnected) return
+        fetch(`${config.address}/api/account/me`, {
+            method: 'GET',
+            headers: { Authorization: `Bearer ${auth.token}` }
+        }).then(res => {
+            if (res) {
+                if (!res.ok) {
+                    auth.logout()
+                }
+            }
+        })
+    }, [auth.token])
+
     return (
         <>
             <Route path='/'>
@@ -41,6 +63,11 @@ export default function App() {
                         <Show input={params.input} />
                     </LoginWall>
                 )}
+            </Route>
+            <Route path='/:address*'>
+                <LoginWall>
+                    <Home />
+                </LoginWall>
             </Route>
         </>
     )
