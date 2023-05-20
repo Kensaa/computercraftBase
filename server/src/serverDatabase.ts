@@ -1,6 +1,6 @@
 import * as Database from 'better-sqlite3'
 import * as fs from 'fs'
-import { Client, ClientInfo, Account, Data, Group } from './types'
+import { Client, ClientInfo, Account, Data, Group, GroupMember } from './types'
 
 const MAX_COUNT = 10000
 
@@ -48,6 +48,8 @@ export class ServerDatabase {
             temp.exec(`CREATE TABLE GroupMembers (
                 groupName INTEGER NOT NULL, /*primary and foreign key, name of the group*/
                 clientName INTEGER NOT NULL, /*primary and foreign key, name of the client*/
+                clientOrder INTEGER NOT NULL, /*order of client in the group*/
+                additionalData TEXT NOT NULL, /*stringified object containing additionnal data related to the client in the group*/
                 PRIMARY KEY (groupName,clientName),
                 FOREIGN KEY (groupName) REFERENCES Groups(name),
                 FOREIGN KEY (clientName) REFERENCES Clients(name)
@@ -277,7 +279,7 @@ export class ServerDatabase {
      */
     getGroupMembers(name: Group['name']) {
         if (!this.exists('Groups', { name })) return undefined
-        const request = `SELECT Clients.name, Clients.hidden, ClientInfos.type, ClientInfos.dataType, ClientInfos.dataUnit, ClientInfos.dataKeys, ClientInfos.actions 
+        const request = `SELECT Clients.name, Clients.hidden, ClientInfos.type, ClientInfos.dataType, ClientInfos.dataUnit, ClientInfos.dataKeys, ClientInfos.actions, GroupMembers.clientOrder, GroupMembers.additionalData 
                         FROM GroupMembers 
                         INNER JOIN Clients ON GroupMembers.clientName = Clients.name
                         INNER JOIN ClientInfos ON ClientInfos.id = Clients.infoID
@@ -287,9 +289,10 @@ export class ServerDatabase {
             unknown
         >[]
         return rawData.map(data =>
-            this.parseData<(Client & ClientInfo)[]>(data, [
+            this.parseData<(Client & ClientInfo & GroupMember)[]>(data, [
                 'dataKeys',
-                'actions'
+                'actions',
+                'additionalData'
             ])
         )
     }
@@ -300,11 +303,23 @@ export class ServerDatabase {
      * @param clientName name of the client
      * @returns true if operation succeeded, false otherwise
      */
-    addClientToGroup(groupName: Group['name'], clientName: Client['name']) {
+    addClientToGroup(
+        groupName: Group['name'],
+        clientName: Client['name'],
+        additionalData: GroupMember['additionalData'] = {}
+    ) {
         if (this.exists('GroupMembers', { groupName, clientName })) return false
         if (!this.exists('Groups', { name: groupName })) return false
         if (!this.exists('Clients', { name: clientName })) return false
-        this.insert('GroupMembers', { groupName, clientName })
+        const currentCount = this.count('GroupMembers', {
+            groupName
+        })
+        this.insert('GroupMembers', {
+            groupName,
+            clientName,
+            clientOrder: currentCount + 1,
+            additionalData: JSON.stringify(additionalData)
+        })
         return true
     }
 
@@ -323,6 +338,54 @@ export class ServerDatabase {
         const request =
             'DELETE FROM GroupMembers WHERE groupName = ? AND clientName = ?'
         this.db.prepare(request).run(groupName, clientName)
+        return true
+    }
+
+    /**
+     * Change the order of a client in a group, if order is already taken, swap the two
+     * @param clientName the name of the client
+     * @param groupName the name of the group
+     * @param newOrder the new order for the client
+     * @returns true if operation succeeded, false otherwise
+     */
+    setClientOrder(
+        clientName: Client['name'],
+        groupName: Group['name'],
+        newOrder: number
+    ) {
+        if (!this.exists('Groups', { name: groupName })) return false
+        if (!this.exists('GroupMembers', { groupName, clientName }))
+            return false
+        if (!this.exists('Clients', { name: clientName })) return false
+
+        const clientAtNewOrder = this.db
+            .prepare(
+                'SELECT * FROM GroupMembers WHERE GroupName = ? AND clientOrder = ?'
+            )
+            .get(groupName, newOrder) as GroupMember & {
+            clientName: string
+            groupName: string
+            clientOrder: number
+        }
+        if (clientAtNewOrder) {
+            const currentOrder = (
+                this.db
+                    .prepare(
+                        'SELECT clientOrder FROM GroupMembers WHERE groupName = ? AND clientName = ?'
+                    )
+                    .get(groupName, clientName) as { clientOrder: number }
+            ).clientOrder
+            this.db
+                .prepare(
+                    'UPDATE GroupMembers SET clientOrder = ? WHERE groupName = ? and clientName = ?'
+                )
+                .run(currentOrder, groupName, clientAtNewOrder.clientName)
+        }
+        this.db
+            .prepare(
+                'UPDATE GroupMembers SET clientOrder = ? WHERE groupName = ? and clientName = ?'
+            )
+            .run(newOrder, groupName, clientName)
         return true
     }
 

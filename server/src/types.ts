@@ -28,8 +28,8 @@ export const groupSchema = z.object({
 export type Group = z.infer<typeof groupSchema>
 /////////////////////////////////////////////////////////////////////////////////
 export const groupMemberSchema = z.object({
-    groupName: groupSchema.shape.name,
-    clientName: clientSchema.shape.name
+    clientOrder: z.number().positive(),
+    additionalData: z.record(z.string(), z.any())
 })
 export type GroupMember = z.infer<typeof groupMemberSchema>
 /////////////////////////////////////////////////////////////////////////////////
