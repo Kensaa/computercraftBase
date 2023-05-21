@@ -61,9 +61,11 @@ const PUBLIC_FOLDER = process.env.PUBLIC_FOLDER || 'public/'
     const username = 'admin'
     const password = 'admin'
     const hashedPassword = createHash('sha256').update(password).digest('hex')
-    if (database.count('Accounts', {}) === 0) {
+    if (database.count('Accounts', {}) <= 1) {
+        console.log('no account found')
         database.createAccount(username, hashedPassword)
     } else if (database.exists('Accounts', { username: 'admin' })) {
+        console.log('other account found, deleting default one')
         database.db
             .prepare('DELETE FROM Accounts WHERE username = ? AND password = ?')
             .run(username, hashedPassword)
