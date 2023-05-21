@@ -5,21 +5,22 @@ import { Client, ClientInfo, Account, Data, Group, GroupMember } from './types'
 const MAX_COUNT = 10000
 
 export class ServerDatabase {
-    filename: string
+    filepath: string
     db: Database.Database
     backupDelay: number
 
     /**
      * Create a new instance of the server database
-     * @param filename path to the database file
+     * @param filepath path to the database file
      * @param backupDelay delay in seconds between saving to disk of the database (default 10sec)
      */
-    constructor(filename: string, backupDelay = 10) {
-        this.filename = filename
+    constructor(filepath: string, backupDelay = 10) {
+        this.filepath = filepath
         this.backupDelay = backupDelay
         //This creates a new database of create an existing one
-        const firstRun = !fs.existsSync(filename)
-        const temp = new Database(filename)
+        const firstRun = !fs.existsSync(filepath)
+        const temp = new Database(filepath)
+        console.log('creating/loading database : ' + filepath)
         if (firstRun) {
             //Create tables
             temp.exec(`CREATE TABLE ClientInfos (
@@ -82,7 +83,7 @@ export class ServerDatabase {
      * Save database to file
      */
     async save() {
-        await this.db.backup(this.filename)
+        await this.db.backup(this.filepath)
     }
 
     /**

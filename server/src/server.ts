@@ -36,6 +36,7 @@ import * as dotenv from 'dotenv'
 dotenv.config()
 
 const WEB_SERVER_PORT = parseInt(process.env.WEB_SERVER_PORT || '3695')
+const DATABASE_PATH = process.env.DATABASE_PATH || 'database.db'
 
 ;(async () => {
     const expressApp = express()
@@ -49,7 +50,7 @@ const WEB_SERVER_PORT = parseInt(process.env.WEB_SERVER_PORT || '3695')
         console.log(`server started on port ${WEB_SERVER_PORT}`)
     )
 
-    const database = new ServerDatabase('database.db')
+    const database = new ServerDatabase(DATABASE_PATH)
     const connectedClients: { name: string; ws: WebSocket }[] = []
     const authSecret = randomBytes(64).toString('hex')
 
