@@ -1,0 +1,7 @@
+database.db
+database.db-journal
+dist/
+node_modules/
+yarn-error.log
+public/
+.env

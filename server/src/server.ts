@@ -2,6 +2,8 @@ import * as ws from 'ws'
 import { WebSocket } from 'ws'
 import * as express from 'express'
 import * as cors from 'cors'
+import * as fs from 'fs'
+import * as path from 'path'
 import { ServerDatabase } from './serverDatabase'
 import {
     createDataMiddleware,
@@ -33,10 +35,12 @@ import {
 } from './types'
 import { randomBytes, createHash } from 'crypto'
 import * as dotenv from 'dotenv'
+
 dotenv.config()
 
 const WEB_SERVER_PORT = parseInt(process.env.WEB_SERVER_PORT || '3695')
 const DATABASE_PATH = process.env.DATABASE_PATH || 'database.db'
+const PUBLIC_FOLDER = process.env.PUBLIC_FOLDER || 'public/'
 
 ;(async () => {
     const expressApp = express()
@@ -126,21 +130,32 @@ const DATABASE_PATH = process.env.DATABASE_PATH || 'database.db'
 
     expressApp.post('/api/account/login', accountLogin)
 
-    expressApp.use(authMiddleware)
+    expressApp.get('/api/client/fetch', authMiddleware, clientFetch)
+    expressApp.get('/api/client/all', authMiddleware, clientAll)
+    expressApp.post('/api/client/action', authMiddleware, clientAction)
+    expressApp.post('/api/account/register', authMiddleware, accountRegister)
+    expressApp.get('/api/account/me', authMiddleware, accountMe)
 
-    expressApp.get('/api/client/fetch', clientFetch)
-    expressApp.get('/api/client/all', clientAll)
-    expressApp.post('/api/client/action', clientAction)
-    expressApp.post('/api/account/register', accountRegister)
-    expressApp.get('/api/account/me', accountMe)
-
-    expressApp.get('/api/group/all', groupAll)
-    expressApp.get('/api/group/get', groupGet)
-    expressApp.post('/api/group/create', groupCreate)
-    expressApp.post('/api/group/remove', groupRemove)
-    expressApp.post('/api/group/addClient', groupAddClient)
-    expressApp.post('/api/group/removeClient', groupRemoveClient)
-    expressApp.post('/api/group/setOrders', groupSetOrders)
+    expressApp.get('/api/group/all', authMiddleware, groupAll)
+    expressApp.get('/api/group/get', authMiddleware, groupGet)
+    expressApp.post('/api/group/create', authMiddleware, groupCreate)
+    expressApp.post('/api/group/remove', authMiddleware, groupRemove)
+    expressApp.post('/api/group/addClient', authMiddleware, groupAddClient)
+    expressApp.post(
+        '/api/group/removeClient',
+        authMiddleware,
+        groupRemoveClient
+    )
+    expressApp.post('/api/group/setOrders', authMiddleware, groupSetOrders)
 
     expressApp.use(errorMiddleware)
+
+    if (!fs.existsSync(PUBLIC_FOLDER)) fs.mkdirSync(PUBLIC_FOLDER)
+    expressApp.use(
+        '/',
+        express.static(path.join(__dirname, '..', PUBLIC_FOLDER))
+    )
+    expressApp.get('*', (req: express.Request, res: express.Response) => {
+        res.sendFile(path.join(__dirname, '..', PUBLIC_FOLDER, 'index.html'))
+    })
 })()
