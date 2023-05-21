@@ -33,6 +33,7 @@ export default function App() {
     }))
     const config = configStore(state => ({ ...state }))
 
+    // check if session expired
     useEffect(() => {
         if (!auth.isConnected) return
         fetch(`${config.address}/api/account/me`, {
