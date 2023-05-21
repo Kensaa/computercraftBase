@@ -392,6 +392,30 @@ export class ServerDatabase {
     }
 
     /**
+     * Set the additional data of a client in a group
+     * @param groupName name of the group
+     * @param clientName name of the client
+     * @param additionalData the data
+     */
+    setClientAdditionalData(
+        groupName: Group['name'],
+        clientName: Client['name'],
+        additionalData: GroupMember['additionalData']
+    ) {
+        if (!this.exists('Groups', { name: groupName })) return false
+        if (!this.exists('Clients', { name: clientName })) return false
+        if (!this.exists('GroupMembers', { groupName, clientName }))
+            return false
+
+        this.db
+            .prepare(
+                'UPDATE GroupMembers SET additionalData = ? WHERE groupName = ? AND clientName = ?'
+            )
+            .run(JSON.stringify(additionalData), groupName, clientName)
+        return true
+    }
+
+    /**
      * Add data to client (update previous one if client is an instant-grapher)
      * @param source the name of the source client
      * @param data the data to add

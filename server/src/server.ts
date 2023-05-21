@@ -27,6 +27,7 @@ import groupRemove from './endpoints/api/group/remove'
 import groupAddClient from './endpoints/api/group/addClient'
 import groupRemoveClient from './endpoints/api/group/removeClient'
 import groupSetOrders from './endpoints/api/group/setOrders'
+import groupSetAdditonalData from './endpoints/api/group/setAdditionalData'
 
 import {
     dataPayloadSchema,
@@ -149,6 +150,11 @@ const PUBLIC_FOLDER = process.env.PUBLIC_FOLDER || 'public/'
         groupRemoveClient
     )
     expressApp.post('/api/group/setOrders', authMiddleware, groupSetOrders)
+    expressApp.post(
+        '/api/group/setAdditionalData',
+        authMiddleware,
+        groupSetAdditonalData
+    )
 
     expressApp.use(errorMiddleware)
 
