@@ -18,8 +18,6 @@ interface ShowProps {
     input: string
 }
 
-const types = ['time-based grapher', 'instant grapher', 'actuator']
-
 export default function ShowGroup({ input }: ShowProps) {
     const [clients, setClients] = useState<GroupMember[]>([])
     const [data, setData] = useState<Data>({})

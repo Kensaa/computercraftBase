@@ -100,6 +100,7 @@ export default function GroupSearch({
                 <thead>
                     <tr>
                         <th>Name</th>
+                        <th>Type</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -155,6 +156,7 @@ function GroupRow({
             onClick={onClick}
         >
             <td>{group.name}</td>
+            <td>{group.type}</td>
         </tr>
     )
 }

@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { Alert, Button, Form, Modal } from 'react-bootstrap'
 import configStore from '../../stores/config'
 import authStore from '../../stores/auth'
+import { groupTypes } from '../../types'
 
 interface CreateGroupModalProps {
     show: boolean
@@ -13,6 +14,7 @@ export default function CreateGroupModal({
     hide
 }: CreateGroupModalProps) {
     const [name, setName] = useState('')
+    const [type, setType] = useState(groupTypes[0])
     const [error, setError] = useState('')
 
     const config = configStore(state => ({ ...state }))
@@ -26,7 +28,8 @@ export default function CreateGroupModal({
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                name
+                name,
+                type
             })
         }).then(res => {
             if (res.ok) {
@@ -64,6 +67,17 @@ export default function CreateGroupModal({
                     value={name}
                     onChange={e => setName(e.target.value)}
                 ></Form.Control>
+                <Form.Select
+                    value={type}
+                    onChange={e => setType(e.target.value)}
+                    className='mt-2'
+                >
+                    {groupTypes.map((type, index) => (
+                        <option key={index} value={type}>
+                            {type}
+                        </option>
+                    ))}
+                </Form.Select>
                 <Button
                     variant='outline-primary'
                     className='mt-2'

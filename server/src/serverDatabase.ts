@@ -43,6 +43,7 @@ export class ServerDatabase {
 
             temp.exec(`CREATE TABLE Groups (
                 name TEXT NOT NULL, /*primary key, name of the group*/
+                type TEXT NOT NULL, /*type of client, (equivalent to Clients' type)*/
                 PRIMARY KEY (name)
             )`)
 
@@ -235,9 +236,9 @@ export class ServerDatabase {
      * @param name the name of the group
      * @returns the id of the created group or undefined if the group already exists
      */
-    createGroup(name: Group['name']) {
+    createGroup(name: Group['name'], type: Group['type']) {
         if (this.groupExists(name)) return undefined
-        return this.insert('Groups', { name }).lastInsertRowid as number
+        return this.insert('Groups', { name, type }).lastInsertRowid as number
     }
 
     /**

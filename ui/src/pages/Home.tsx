@@ -21,7 +21,15 @@ export default function Home() {
 
     const onGroupValidate = (selectedGroup: Group) => {
         //TODO: send to show page for groups
-        setLocation(`/showGroup/${encodeURI(selectedGroup.name)}`)
+        let location = ''
+        switch (selectedGroup.type) {
+            case 'create':
+                location = 'create'
+                break
+            default:
+                location = 'group'
+        }
+        setLocation(`/show/${location}/${encodeURI(selectedGroup.name)}`)
     }
 
     return (

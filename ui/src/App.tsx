@@ -9,6 +9,7 @@ import Login from './pages/Login'
 import Groups from './pages/groups/Groups'
 import ShowClients from './pages/show/ShowClients'
 import ShowGroup from './pages/show/ShowGroup'
+import ShowCreate from './pages/show/ShowCreate'
 
 interface LoginWallProps {
     children: JSX.Element
@@ -67,17 +68,24 @@ export default function App() {
                 </LoginWall>
             </Route>
 
-            <Route path='/showClients/:input'>
+            <Route path='/show/clients/:input'>
                 {params => (
                     <LoginWall>
                         <ShowClients input={params.input} />
                     </LoginWall>
                 )}
             </Route>
-            <Route path='/showGroup/:input'>
+            <Route path='/show/group/:input'>
                 {params => (
                     <LoginWall>
                         <ShowGroup input={params.input} />
+                    </LoginWall>
+                )}
+            </Route>
+            <Route path='/show/create/:input'>
+                {params => (
+                    <LoginWall>
+                        <ShowCreate input={params.input} />
                     </LoginWall>
                 )}
             </Route>

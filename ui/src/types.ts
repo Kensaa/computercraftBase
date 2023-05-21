@@ -23,9 +23,12 @@ export type Data = Record<string, Datapoint[]>
 
 export interface Group {
     name: string
+    type: string
 }
 
 export interface DataContext {
     clients: Client[]
     data: Data
 }
+
+export const groupTypes = ['default', 'create']

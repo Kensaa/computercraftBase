@@ -23,7 +23,8 @@ export const clientInfoSchema = z.object({
 export type ClientInfo = z.infer<typeof clientInfoSchema>
 /////////////////////////////////////////////////////////////////////////////////
 export const groupSchema = z.object({
-    name: z.string()
+    name: z.string(),
+    type: z.string()
 })
 export type Group = z.infer<typeof groupSchema>
 /////////////////////////////////////////////////////////////////////////////////
