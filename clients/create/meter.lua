@@ -6,10 +6,10 @@ if not err == nil then
 end
 
 local clientType = "instant grapher"
-local clientName = "create1"
+local clientName = "create meter 1"
 
 local dataType = {
-    type="create control unit",
+    type="create meter unit",
     unit="",
     keys= {
         "speed",
