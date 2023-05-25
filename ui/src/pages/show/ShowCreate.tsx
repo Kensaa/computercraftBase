@@ -108,10 +108,16 @@ export default function ShowCreate({ input }: ShowProps) {
     const [nodes, setNodes] = useState<Node[]>([])
     const [edges, setEdges] = useState<Edge[]>([])
 
-    const onNodesChange = (changes: NodeChange[]) =>
-        setNodes(nds => applyNodeChanges(changes, nds))
-    const onEdgesChange = (changes: EdgeChange[]) =>
-        setEdges(eds => applyEdgeChanges(changes, eds))
+    const onNodesChange = useCallback(
+        (changes: NodeChange[]) =>
+            setNodes(nds => applyNodeChanges(changes, nds)),
+        []
+    )
+    const onEdgesChange = useCallback(
+        (changes: EdgeChange[]) =>
+            setEdges(eds => applyEdgeChanges(changes, eds)),
+        []
+    )
 
     return (
         <dataContext.Provider value={{ clients, data }}>
@@ -142,13 +148,10 @@ interface NodeProps {
     }
     isConnectable: boolean
 }
-function MeterNode({ data: { client }, isConnectable }: NodeProps) {
-    if (!client.dataKeys) return <div>ERROR</div>
-    if (
-        !client.dataKeys.every(e => ['speed', 'stress', 'capacity'].includes(e))
-    )
-        return <div>INVALID CLIENT</div>
 
+function MeterNode({ data: { client }, isConnectable }: NodeProps) {
+    if (client.dataType !== 'create meter unit')
+        return <div>INVALID CLIENT</div>
     const clientData = useContext(dataContext).data[client.name]
 
     if (!clientData || clientData.length === 0) return <div>LOADING</div>
@@ -161,6 +164,7 @@ function MeterNode({ data: { client }, isConnectable }: NodeProps) {
             <h5>
                 {stress}su / {capacity}su
             </h5>
+            <ToggleSwitch client={client} />
             <ProgressBar
                 now={stress}
                 max={capacity}
@@ -176,16 +180,12 @@ function MeterNode({ data: { client }, isConnectable }: NodeProps) {
                 position={Position.Bottom}
                 isConnectable={isConnectable}
             />
-            <ToggleSwitch client={client} />
         </div>
     )
 }
 
 function SwitchNode({ data: { client }, isConnectable }: NodeProps) {
-    console.log(client)
-    if (!client.actions) return <div>ERROR</div>
-    if (!client.actions.every(e => ['on', 'off'].includes(e)))
-        return <div>INVALID CLIENT</div>
+    if (client.dataType !== 'create switch') return <div>INVALID CLIENT</div>
     return (
         <div>
             <h3 style={{ borderBottom: '1px solid #dee2e6' }}>{client.name}</h3>
@@ -213,7 +213,7 @@ function ToggleSwitch({ client, defaultOn = true }: ToggleSwitchProps) {
     const [isOn, setIsOn] = useState(defaultOn)
     const config = configStore(state => ({ ...state }))
     const token = authStore(state => state.token)
-    const on = () => {
+    const action = (action: string) => {
         setIsOn(true)
         fetch(`${config.address}/api/client/action`, {
             method: 'POST',
@@ -221,33 +221,21 @@ function ToggleSwitch({ client, defaultOn = true }: ToggleSwitchProps) {
                 Authorization: `Bearer ${token}`,
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ name: client.name, action: 'on' })
-        })
-    }
-
-    const off = () => {
-        setIsOn(false)
-        fetch(`${config.address}/api/client/action`, {
-            method: 'POST',
-            headers: {
-                Authorization: `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ name: client.name, action: 'off' })
+            body: JSON.stringify({ name: client.name, action })
         })
     }
 
     return (
         <div className='d-flex justify-content-center mt-2'>
             <Button
-                onClick={on}
+                onClick={() => action('on')}
                 variant={isOn ? 'success' : 'outline-success'}
                 className='m-1'
             >
                 ON
             </Button>
             <Button
-                onClick={off}
+                onClick={() => action('off')}
                 variant={isOn ? 'outline-danger' : 'danger'}
                 className='m-1'
             >

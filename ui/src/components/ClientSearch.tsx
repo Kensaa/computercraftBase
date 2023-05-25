@@ -31,7 +31,6 @@ export default function ClientSearch({
     const token = authStore(state => state.token)
     const { clients, refetchClients } = dataStore(state => ({ ...state }))
 
-    //const [clients, setClients] = useState<Client[]>([])
     const [shownClients, setShownClients] = useState<Client[]>([])
     const [selectedClients, setSelectedClients] = useState<Client[]>([])
     useEffect(() => {
@@ -39,16 +38,6 @@ export default function ClientSearch({
             setSelectedClients(preSelected)
         }
     }, [preSelected])
-    /*useEffect(() => {
-        fetch(`${config.address}/api/client/all`, {
-            method: 'GET',
-            headers: { Authorization: `Bearer ${token}` }
-        })
-            .then(res => res.json())
-            .then(res => {
-                setClients(res)
-            })
-    }, [config.address, token])*/
 
     // force refetch on clients to update the current cached list
     useEffect(refetchClients, [])

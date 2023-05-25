@@ -20,23 +20,12 @@ export default function GroupSearch({
 }: GroupSearchProps) {
     const [searchValue, setSearchValue] = useState('')
 
-    //const [groups, setGroups] = useState<Group[]>([])
     const [selectedGroup, setSelectedGroup] = useState<Group>()
     const [shownGroups, setShownGroups] = useState<Group[]>([])
 
     const config = configStore(state => ({ ...state }))
     const token = authStore(state => state.token)
     const { groups, refetchGroups } = dataStore(state => ({ ...state }))
-    /*useEffect(() => {
-        fetch(`${config.address}/api/group/all`, {
-            method: 'GET',
-            headers: { Authorization: `Bearer ${token}` }
-        })
-            .then(res => res.json())
-            .then(res => {
-                setGroups(res)
-            })
-    }, [config.address, token])*/
 
     // force refetch on groups to update the current cached list
     useEffect(refetchGroups, [])

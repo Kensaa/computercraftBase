@@ -32,28 +32,6 @@ export default function ShowClients({ input }: ShowProps) {
         ...state
     }))
 
-    /*useEffect(() => {
-        const clientNames = input.split(',').map(e => decodeURI(e).trim())
-        fetch(`${config.address}/api/client/all`, {
-            method: 'GET',
-            headers: { Authorization: `Bearer ${token}` }
-        })
-            .then(res => {
-                if (res.status === 200) return res.json()
-                throw new Error('error while fetching clients infos')
-            })
-            .then(clients => clients as Client[])
-            .then(clients =>
-                clients.filter(client => clientNames.includes(client.name))
-            )
-            .then(clients =>
-                clients.sort(
-                    (a, b) => types.indexOf(a.type) - types.indexOf(b.type)
-                )
-            )
-            .then(clients => setClients(clients))
-    }, [input])*/
-
     useEffect(refetchClients, [])
 
     useEffect(() => {
