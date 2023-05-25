@@ -16,7 +16,6 @@ export default function Home() {
         const paramString = selectedClients
             .map(e => encodeURI(e.name))
             .join(',')
-        console.log(`/show/clients/${paramString}`)
         setLocation(`/show/clients/${paramString}`)
     }
 

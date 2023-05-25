@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { Alert, Button, Form, Modal } from 'react-bootstrap'
 import configStore from '../../stores/config'
 import authStore from '../../stores/auth'
+import dataStore from '../../stores/data'
 import { groupTypes } from '../../types'
 
 interface CreateGroupModalProps {
@@ -19,6 +20,7 @@ export default function CreateGroupModal({
 
     const config = configStore(state => ({ ...state }))
     const token = authStore(state => state.token)
+    const refetchGroup = dataStore(state => state.refetchGroups)
 
     const onValidate = () => {
         fetch(`${config.address}/api/group/create`, {
@@ -35,6 +37,7 @@ export default function CreateGroupModal({
             if (res.ok) {
                 hide()
                 config.setAddress(config.address)
+                refetchGroup()
             } else {
                 if (res.status === 409) {
                     setError(`The group "${name}" already exists`)

@@ -3,8 +3,9 @@ import { Button, Form, Table } from 'react-bootstrap'
 
 import authStore from '../stores/auth'
 import configStore from '../stores/config'
+import dataStore from '../stores/data'
 import { Group } from '../types'
-import { Plus, SlidersHorizontal } from 'lucide-react'
+import { Plus } from 'lucide-react'
 
 interface GroupSearchProps {
     onValidate: (selectedGroup: Group) => void
@@ -19,14 +20,14 @@ export default function GroupSearch({
 }: GroupSearchProps) {
     const [searchValue, setSearchValue] = useState('')
 
-    const [groups, setGroups] = useState<Group[]>([])
+    //const [groups, setGroups] = useState<Group[]>([])
     const [selectedGroup, setSelectedGroup] = useState<Group>()
     const [shownGroups, setShownGroups] = useState<Group[]>([])
 
     const config = configStore(state => ({ ...state }))
     const token = authStore(state => state.token)
-
-    useEffect(() => {
+    const { groups, refetchGroups } = dataStore(state => ({ ...state }))
+    /*useEffect(() => {
         fetch(`${config.address}/api/group/all`, {
             method: 'GET',
             headers: { Authorization: `Bearer ${token}` }
@@ -35,7 +36,10 @@ export default function GroupSearch({
             .then(res => {
                 setGroups(res)
             })
-    }, [config.address, token])
+    }, [config.address, token])*/
+
+    // force refetch on groups to update the current cached list
+    useEffect(refetchGroups, [])
 
     useEffect(() => {
         let before = groups

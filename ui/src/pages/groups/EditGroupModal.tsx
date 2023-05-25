@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { Button, Modal, Tab, Tabs } from 'react-bootstrap'
 import configStore from '../../stores/config'
 import authStore from '../../stores/auth'
+import dataStore from '../../stores/data'
 import { Client, Group, GroupMember } from '../../types'
 import { queryFetch } from '../../utils'
 import ClientSearch from '../../components/ClientSearch'
@@ -24,6 +25,7 @@ export default function EditGroupModal({ group, hide }: EditGroupModalProps) {
 
     const config = configStore(state => ({ ...state }))
     const token = authStore(state => state.token)
+    const refetchGroup = dataStore(state => state.refetchGroups)
 
     useEffect(() => {
         queryFetch(
@@ -46,8 +48,12 @@ export default function EditGroupModal({ group, hide }: EditGroupModalProps) {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({ name: group.name })
+        }).then(res => {
+            if (res.ok) {
+                hide()
+                refetchGroup()
+            }
         })
-        hide()
     }
 
     return (

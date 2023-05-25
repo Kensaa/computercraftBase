@@ -4,6 +4,8 @@ import { useInterval } from 'usehooks-ts'
 
 import configStore from '../../stores/config'
 import authStore from '../../stores/auth'
+import dataStore from '../../stores/data'
+
 import { queryFetch } from '../../utils'
 import AppNavbar from '../../components/AppNavbar'
 import Plot from '../../components/clients/Plot'
@@ -26,8 +28,11 @@ export default function ShowClients({ input }: ShowProps) {
 
     const config = configStore(state => ({ ...state }))
     const token = authStore(state => state.token)
+    const { clients: clientsList, refetchClients } = dataStore(state => ({
+        ...state
+    }))
 
-    useEffect(() => {
+    /*useEffect(() => {
         const clientNames = input.split(',').map(e => decodeURI(e).trim())
         fetch(`${config.address}/api/client/all`, {
             method: 'GET',
@@ -47,6 +52,18 @@ export default function ShowClients({ input }: ShowProps) {
                 )
             )
             .then(clients => setClients(clients))
+    }, [input])*/
+
+    useEffect(refetchClients, [])
+
+    useEffect(() => {
+        const clientNames = input.split(',').map(e => decodeURI(e).trim())
+
+        const list = clientsList
+            .filter(client => clientNames.includes(client.name))
+            .sort((a, b) => types.indexOf(a.type) - types.indexOf(b.type))
+
+        setClients(list)
     }, [input])
 
     useInterval(() => {

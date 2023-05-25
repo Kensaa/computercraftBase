@@ -4,6 +4,7 @@ import { useLocation } from 'wouter'
 
 import authStore from '../stores/auth'
 import configStore from '../stores/config'
+import dataStore from '../stores/data'
 import { Client } from '../types'
 
 interface ClientSearchProps {
@@ -28,8 +29,9 @@ export default function ClientSearch({
 
     const config = configStore(state => ({ ...state }))
     const token = authStore(state => state.token)
+    const { clients, refetchClients } = dataStore(state => ({ ...state }))
 
-    const [clients, setClients] = useState<Client[]>([])
+    //const [clients, setClients] = useState<Client[]>([])
     const [shownClients, setShownClients] = useState<Client[]>([])
     const [selectedClients, setSelectedClients] = useState<Client[]>([])
     useEffect(() => {
@@ -37,7 +39,7 @@ export default function ClientSearch({
             setSelectedClients(preSelected)
         }
     }, [preSelected])
-    useEffect(() => {
+    /*useEffect(() => {
         fetch(`${config.address}/api/client/all`, {
             method: 'GET',
             headers: { Authorization: `Bearer ${token}` }
@@ -46,7 +48,10 @@ export default function ClientSearch({
             .then(res => {
                 setClients(res)
             })
-    }, [config.address, token])
+    }, [config.address, token])*/
+
+    // force refetch on clients to update the current cached list
+    useEffect(refetchClients, [])
 
     useEffect(() => {
         let before = clients
