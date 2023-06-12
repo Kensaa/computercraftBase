@@ -59,14 +59,15 @@ const PUBLIC_FOLDER = process.env.PUBLIC_FOLDER || 'public/'
     const connectedClients: { name: string; ws: WebSocket }[] = []
     const authSecret = randomBytes(64).toString('hex')
 
+    // Creating the default account
     const username = 'admin'
     const password = 'admin'
     const hashedPassword = createHash('sha256').update(password).digest('hex')
     if (database.count('Accounts', {}) <= 1) {
-        console.log('no account found')
+        console.log('no account found, creating the default one (admin:admin)')
         database.createAccount(username, hashedPassword)
     } else if (database.exists('Accounts', { username: 'admin' })) {
-        console.log('other account found, deleting default one')
+        console.log('other accounts found, deleting default one')
         database.db
             .prepare('DELETE FROM Accounts WHERE username = ? AND password = ?')
             .run(username, hashedPassword)
