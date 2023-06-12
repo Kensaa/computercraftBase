@@ -19,7 +19,7 @@ interface EditGroupModalProps {
 }
 
 export default function EditGroupModal({ group, hide }: EditGroupModalProps) {
-    if (!group) return <div>ERROR</div>
+    if (!group) return <div></div>
 
     const [groupMembers, setGroupMembers] = useState<GroupMember[]>([])
 
@@ -28,6 +28,7 @@ export default function EditGroupModal({ group, hide }: EditGroupModalProps) {
     const refetchGroup = dataStore(state => state.refetchGroups)
 
     useEffect(() => {
+        if (!group) return
         queryFetch(
             `${config.address}/api/group/get`,
             { method: 'GET', headers: { Authorization: `Bearer ${token}` } },

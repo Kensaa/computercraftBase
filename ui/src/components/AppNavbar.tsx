@@ -29,7 +29,7 @@ export default function AppNavbar() {
                     <Nav>
                         {!isConnected ? (
                             <Nav.Link as={Link} to='/login'>
-                                Connexion
+                                Connection
                             </Nav.Link>
                         ) : (
                             <NavDropdown align='end' title={user.username}>
