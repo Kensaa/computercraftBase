@@ -38,6 +38,8 @@ export default function CreateGroupModal({
                 hide()
                 config.setAddress(config.address)
                 refetchGroup()
+                setName('')
+                setType(groupTypes[0])
             } else {
                 if (res.status === 409) {
                     setError(`The group "${name}" already exists`)
