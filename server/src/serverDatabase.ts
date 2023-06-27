@@ -29,7 +29,7 @@ export class ServerDatabase {
                 dataType TEXT, /*type of the data sent by the client*/
                 dataUnit TEXT, /*unit of the data sent by the client*/
                 dataKeys TEXT, /*stringified array of the keys (ex: [maxStorage, currentStorage]) (null if client doesn"t send data)*/
-                actions TEXT, /*stringified array of the client's actions (null if client doesn"t have action*/
+                actions TEXT, /*stringified array of the client's actions (null if client doesn"t have action)*/
                 PRIMARY KEY (id)
             )`)
 

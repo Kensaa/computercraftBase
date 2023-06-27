@@ -214,7 +214,8 @@ function ToggleSwitch({ client, defaultOn = true }: ToggleSwitchProps) {
     const config = configStore(state => ({ ...state }))
     const token = authStore(state => state.token)
     const action = (action: string) => {
-        setIsOn(true)
+        console.log(action === 'on')
+        setIsOn(action === 'on')
         fetch(`${config.address}/api/client/action`, {
             method: 'POST',
             headers: {
