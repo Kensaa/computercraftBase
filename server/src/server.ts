@@ -39,7 +39,6 @@ import 'dotenv/config'
 
 const WEB_SERVER_PORT = parseInt(process.env.WEB_SERVER_PORT || '3695')
 const DATABASE_PATH = process.env.DATABASE_PATH || 'database.db'
-const PUBLIC_FOLDER = process.env.PUBLIC_FOLDER || 'public/'
 
 ;(async () => {
     const expressApp = express()
@@ -157,6 +156,7 @@ const PUBLIC_FOLDER = process.env.PUBLIC_FOLDER || 'public/'
 
     expressApp.use(errorMiddleware)
 
+    const PUBLIC_FOLDER = 'public/'
     let publicPath = ''
     if (process.env.NODE_ENV === 'production') {
         publicPath = PUBLIC_FOLDER
