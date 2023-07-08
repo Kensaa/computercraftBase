@@ -35,9 +35,7 @@ import {
     wsMessageSchema
 } from './types'
 import { randomBytes, createHash } from 'crypto'
-import * as dotenv from 'dotenv'
-
-dotenv.config()
+import 'dotenv/config'
 
 const WEB_SERVER_PORT = parseInt(process.env.WEB_SERVER_PORT || '3695')
 const DATABASE_PATH = process.env.DATABASE_PATH || 'database.db'
