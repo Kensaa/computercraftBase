@@ -65,12 +65,15 @@ export const dataPayloadSchema = z.object({
 })
 export type DataPayload = z.infer<typeof dataPayloadSchema>
 /////////////////////////////////////////////////////////////////////////////////
-export const webSocketActionSchema = z.enum(['register', 'data'])
+export const pingPayloadSchema = z.object({})
+export type PingPayload = z.infer<typeof pingPayloadSchema>
+/////////////////////////////////////////////////////////////////////////////////
+export const webSocketActionSchema = z.enum(['register', 'data', 'ping'])
 export type webSocketAction = z.infer<typeof webSocketActionSchema>
 /////////////////////////////////////////////////////////////////////////////////
 export const wsMessageSchema = z.object({
     action: webSocketActionSchema,
-    payload: registerPayloadSchema.or(dataPayloadSchema)
+    payload: registerPayloadSchema.or(dataPayloadSchema).or(pingPayloadSchema)
 })
 export type WSMessage = z.infer<typeof wsMessageSchema>
 /////////////////////////////////////////////////////////////////////////////////

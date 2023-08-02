@@ -1,10 +1,4 @@
 local url = "ws://localhost:3695"
-local ws, err = http.websocket(url)
-if not err == nil then
-    print(err)
-    return
-end
-
 local clientType = "instant grapher"
 local clientName = "chest1"
 
@@ -26,7 +20,39 @@ local registerMsg = {
         dataType=dataType
     }
 }
-ws.send(textutils.serializeJSON(registerMsg))
+
+local ws = nil
+
+function connect(url, retry)
+    retry = retry or 0
+    if retry > 5 then
+        print('Server is not reachable, shutting down.')
+        os.shutdown()
+    end
+    ws = http.websocket(url)
+    if not ws then
+        print('Unable to connect to server, retrying in 5 seconds')
+        sleep(5)
+        ws = connect(url, retry + 1)
+    else
+        print('Connected !')
+        send(registerMsg)
+    end
+end
+
+function send(data)
+    passed, err = pcall(
+        function ()
+            ws.send(textutils.serializeJSON(data))
+        end)
+    if not passed
+     then
+        print('An error has occured while sending data to server ! reconnecting ...')
+        connect(url)
+    end
+end
+
+connect(url)
 
 local chest = peripheral.wrap('back')
 
@@ -42,24 +68,24 @@ while true do
         items[i] = chest.getItemDetail(i)
     end
 
-    local json = '['
-    local first = true
-    for i, item in pairs(items) do
-        if first then
-            first = false
-        else
-            json = json .. ','
-        end
-        json = json .. '{'
-        json = json .. '"slot":' .. i .. ','
-        json = json .. '"count":' .. item.count .. ','
-        json = json .. '"displayName":"' .. item.displayName .. '",'
-        json = json .. '"maxCount":' .. item.maxCount .. ','
-        json = json .. '"name":"' .. item.name .. '"'
-        json = json .. '}'
-    end
-    json = json .. ']'
+    local items2 = {}
 
-    ws.send('{"action":"data","payload":{"data":{"storage":'..storage..',"capacity":'..capacity..',"items":'..json..'}}}')
+    for i, item in pairs(items) do
+        table.insert(items2,{
+            slot=i,
+            count=item.count,
+            displayName=item.displayName,
+            maxCount=item.maxCount,
+            name=item.name
+        })
+    end
+
+    send({action="data",payload={
+        data={
+            storage=storage,
+            capacity=capacity,
+            items=items2
+        }
+    }})
     sleep(1)
 end

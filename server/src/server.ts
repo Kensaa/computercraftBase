@@ -104,6 +104,8 @@ const DATABASE_PATH = process.env.DATABASE_PATH || 'database.db'
                 const clientSession = connectedClients.find(e => e.ws === ws)
                 if (!clientSession) return ws.close()
                 database.addData(clientSession.name, payload.data)
+            } else if (message.action === 'ping') {
+                //Ping received
             } else {
                 ws.send('unsupported action')
             }
