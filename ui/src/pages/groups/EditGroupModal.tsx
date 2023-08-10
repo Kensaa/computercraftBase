@@ -157,7 +157,6 @@ function EditTab({ groupMembers, group, hide }: TabsProps) {
             <ClientSearch
                 onValidate={handleMemberChange}
                 preSelected={groupMembers}
-                ShowDisconnected
                 className='mt-2'
             />
         </div>
