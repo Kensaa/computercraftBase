@@ -76,10 +76,10 @@ export default function Login() {
                 className='h-75 d-flex flex-column align-items-center mt-5'
             >
                 <Form.Group controlId='username' className='mb-3'>
-                    <Form.Label>Nom d'utilisateur</Form.Label>
+                    <Form.Label>Username</Form.Label>
                     <Form.Control
                         type='text'
-                        placeholder="Nom d'utilisateur"
+                        placeholder='Username'
                         required
                         value={username}
                         onChange={({ currentTarget }) =>
@@ -87,14 +87,14 @@ export default function Login() {
                         }
                     />
                     <Form.Control.Feedback type='invalid'>
-                        Nom d'utilisateur invalide
+                        Invalid username
                     </Form.Control.Feedback>
                 </Form.Group>
                 <Form.Group controlId='password' className='mb-3'>
-                    <Form.Label>Mot de passe</Form.Label>
+                    <Form.Label>password</Form.Label>
                     <Form.Control
                         type='password'
-                        placeholder='Mot de passe'
+                        placeholder='Password'
                         required
                         value={password}
                         onChange={({ currentTarget }) =>
@@ -102,11 +102,11 @@ export default function Login() {
                         }
                     />
                     <Form.Control.Feedback type='invalid'>
-                        Mot de passe invalide
+                        Invalid password
                     </Form.Control.Feedback>
                 </Form.Group>
                 <Button variant='primary' type='submit'>
-                    Connexion
+                    Connection
                 </Button>
             </Form>
         </div>

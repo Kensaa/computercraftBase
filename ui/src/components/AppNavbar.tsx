@@ -34,7 +34,7 @@ export default function AppNavbar() {
                         ) : (
                             <NavDropdown align='end' title={user.username}>
                                 <NavDropdown.Item as={Link} to='/account'>
-                                    Mon Compte
+                                    My Account
                                 </NavDropdown.Item>
                                 <NavDropdown.Item
                                     onClick={() => {
@@ -42,7 +42,7 @@ export default function AppNavbar() {
                                         setLocation('/')
                                     }}
                                 >
-                                    Déconnexion
+                                    Disconnect
                                 </NavDropdown.Item>
                             </NavDropdown>
                         )}
