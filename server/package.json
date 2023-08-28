@@ -14,7 +14,8 @@
         "zod": "^3.21.4"
     },
     "scripts": {
-        "start": "tsc && node dist/server.js"
+        "build": "tsc",
+        "start": "yarn build && node dist/server.js"
     },
     "devDependencies": {
         "@types/better-sqlite3": "^7.6.4",
