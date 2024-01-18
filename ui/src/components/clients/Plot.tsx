@@ -14,7 +14,7 @@ import {
 import { Line } from 'react-chartjs-2'
 ChartJS.register(CategoryScale, LinearScale, TimeScale, PointElement, LineElement, Title, Tooltip, Legend, ArcElement)
 import configStore from '../../stores/config'
-import { Client, DataContext } from '../../types'
+import { Client, DataContext, Datapoint } from '../../types'
 
 import { Spinner } from 'react-bootstrap'
 
@@ -82,16 +82,58 @@ export default function Plot({ client, context }: PlotProps) {
             scales
         }
     }, [config.plotConfig, client.name, client.dataKeys])
-
+    console.log(clientData)
     return (
         <div style={{ width: '45%', height: '50%' }} className='border m-2'>
             {plotData ? (
-                <Line data={plotData} options={plotOptions} />
+                <div className='w-100 h-100 d-flex flex-column align-item-center'>
+                    <div style={{ flexGrow: 1 }}>
+                        <Line data={plotData} options={plotOptions} />
+                    </div>
+
+                    <VariationElement
+                        data={clientData.slice(clientData.length - 2, clientData.length)}
+                        keys={client.dataKeys.flat()}
+                    />
+                </div>
             ) : (
                 <div className='h-100 d-flex justify-content-center align-items-center'>
                     <Spinner animation='border' />
                 </div>
             )}
+        </div>
+    )
+}
+
+interface VariationElement {
+    data: Datapoint[]
+    keys: string[]
+}
+
+function VariationElement({ data, keys }: VariationElement) {
+    console.log(data)
+    if (data.length < 2) return <div>Not Enough Data</div>
+    const previous = data[0].data
+    const current = data[1].data
+    return (
+        <div className='d-flex justify-content-center' style={{ flexGrow: 1 }}>
+            {keys.map(key => {
+                const variation = current[key] - previous[key]
+
+                return (
+                    <div
+                        key={key}
+                        className='d-flex flex-column m-2'
+                        style={{ color: variation >= 0 ? 'green' : 'red' }}
+                    >
+                        <h5>{key}</h5>
+                        <h6>
+                            {variation >= 0 ? '+' : '-'}
+                            {Math.abs(variation)}
+                        </h6>
+                    </div>
+                )
+            })}
         </div>
     )
 }
