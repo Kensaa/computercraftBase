@@ -67,6 +67,9 @@ export default function Plot({ client, context }: PlotProps) {
                 position: i % 2 == 0 ? 'left' : 'right',
                 grid: {
                     drawOnChartArea: false
+                },
+                ticks: {
+                    callback: (value: number) => applySuffix(value) + ' ' + client.dataUnit
                 }
             }
         }
@@ -147,7 +150,7 @@ function NumbersElements({ data, keys, unit }: NumbersElementsProps) {
 function applySuffix(value: number) {
     const suffixes = ['', 'k', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y']
     let suffixIndex = 0
-    while (value > 1000) {
+    while (value >= 1000) {
         value /= 1000
         suffixIndex++
     }
