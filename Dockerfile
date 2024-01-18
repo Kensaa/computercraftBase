@@ -1,4 +1,4 @@
-FROM node:latest as build_env
+FROM node:20-bookworm as build_env
 
 WORKDIR /app/server
 COPY ./server/package.json ./
