@@ -5,7 +5,7 @@ export interface Client {
     type: 'time-based grapher' | 'instant grapher' | 'actuator'
     dataType: string
     dataUnit?: string
-    dataKeys?: string[]
+    dataKeys?: string[][]
     actions?: string[]
 }
 

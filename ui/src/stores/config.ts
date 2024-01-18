@@ -20,8 +20,8 @@ const plotConfig = {
     stacked: false,
     animation: {
         duration: 0
-    },
-    scales: {
+    }
+    /*scales: {
         y: {
             type: 'linear',
             display: true,
@@ -30,28 +30,51 @@ const plotConfig = {
                 drawOnChartArea: false
             }
         }
-        /*y1: {
-        type: 'linear',
-        display: true,
-        position: 'right',
-        grid: {
-          drawOnChartArea: false,
-        },
-      },*/
-    }
+        
+      
+    }*/
 }
-const plotColors = [
-    '#a50026',
-    '#d73027',
-    '#f46d43',
-    '#fdae61',
-    '#fee08b',
-    '#ffffbf',
-    '#d9ef8b',
-    '#a6d96a',
-    '#66bd63',
-    '#1a9850',
-    '#006837'
+
+const colors = [
+    [
+        '#a50026',
+        '#d73027',
+        '#f46d43',
+        '#fdae61',
+        '#fee08b',
+        '#ffffbf',
+        '#d9ef8b',
+        '#a6d96a',
+        '#66bd63',
+        '#1a9850',
+        '#006837'
+    ],
+    [
+        '#543005',
+        '#8c510a',
+        '#bf812d',
+        '#dfc27d',
+        '#f6e8c3',
+        '#f5f5f5',
+        '#c7eae5',
+        '#80cdc1',
+        '#35978f',
+        '#01665e',
+        '#003c30'
+    ],
+    [
+        '#8e0152',
+        '#c51b7d',
+        '#de77ae',
+        '#f1b6da',
+        '#fde0ef',
+        '#f7f7f7',
+        '#e6f5d0',
+        '#b8e186',
+        '#7fbc41',
+        '#4d9221',
+        '#276419'
+    ]
 ]
 
 interface configType {
@@ -59,13 +82,13 @@ interface configType {
     maxSelectedClient: number
     fetchOptions: Record<string, any>
     plotConfig: Record<string, any>
-    plotColors: string[]
+    plotColors: string[][]
 
     setAddress: (address: string) => void
     setMaxSelectedClient: (maxSelectedClient: number) => void
     setFetchOptions: (fetchOptions: Record<string, any>) => void
     setPlotConfig: (plotConfig: Record<string, any>) => void
-    setPlotColors: (plotColors: string[]) => void
+    setPlotColors: (plotColors: string[][]) => void
 }
 
 export default create<configType>(set => ({
@@ -73,7 +96,7 @@ export default create<configType>(set => ({
     maxSelectedClient,
     fetchOptions,
     plotConfig,
-    plotColors,
+    plotColors: colors,
     setAddress: address => set({ address }),
     setMaxSelectedClient: maxSelectedClient => set({ maxSelectedClient }),
     setFetchOptions: fetchOptions => set({ fetchOptions }),

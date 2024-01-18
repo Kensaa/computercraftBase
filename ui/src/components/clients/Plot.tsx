@@ -12,21 +12,10 @@ import {
     ArcElement
 } from 'chart.js'
 import { Line } from 'react-chartjs-2'
-ChartJS.register(
-    CategoryScale,
-    LinearScale,
-    TimeScale,
-    PointElement,
-    LineElement,
-    Title,
-    Tooltip,
-    Legend,
-    ArcElement
-)
+ChartJS.register(CategoryScale, LinearScale, TimeScale, PointElement, LineElement, Title, Tooltip, Legend, ArcElement)
 import configStore from '../../stores/config'
 import { Client, DataContext } from '../../types'
 
-import { dataContext } from '../../pages/show/ShowClients'
 import { Spinner } from 'react-bootstrap'
 
 interface PlotProps {
@@ -47,30 +36,53 @@ export default function Plot({ client, context }: PlotProps) {
         const keys = client.dataKeys
         if (!keys) return undefined
         if (!clientData) return undefined
+
+        const colors = config.plotColors
+
         return {
             labels: clientData.map(e => new Date(e.time).toLocaleTimeString()),
-            datasets: keys.map((key, index) => ({
-                label: key,
-                data: clientData.map(e => e.data[key]),
-                backgroundColor: config.plotColors[index],
-                borderColor: config.plotColors[index],
-                color: config.plotColors[index]
-            }))
+            datasets: keys
+                .map((axis, axisIndex) =>
+                    axis.map((key, keyIndex) => ({
+                        label: key,
+                        data: clientData.map(e => e.data[key]),
+                        backgroundColor: colors[axisIndex % colors.length][keyIndex % colors[keyIndex].length],
+                        borderColor: colors[axisIndex % colors.length][keyIndex % colors[keyIndex].length],
+                        color: colors[axisIndex % colors.length][keyIndex % colors[keyIndex].length],
+                        yAxisID: `yAxis${axisIndex}`
+                    }))
+                )
+                .flat()
         }
     }, [clientData, client.dataKeys, config])
 
-    const plotOptions = useMemo(
-        () => ({
+    const plotOptions = useMemo(() => {
+        const axisCount = client.dataKeys ? client.dataKeys.length : 0
+        const scales: Record<string, any> = {}
+
+        for (let i = 0; i < axisCount; i++) {
+            scales[`yAxis${i}`] = {
+                type: 'linear',
+                display: true,
+                position: i % 2 == 0 ? 'left' : 'right',
+                grid: {
+                    drawOnChartArea: false
+                }
+            }
+        }
+
+        return {
             ...config.plotConfig,
             plugins: {
                 title: {
                     display: true,
                     text: client.name
                 }
-            }
-        }),
-        [config.plotConfig, client.name]
-    )
+            },
+            scales
+        }
+    }, [config.plotConfig, client.name, client.dataKeys])
+
     return (
         <div style={{ width: '45%', height: '50%' }} className='border m-2'>
             {plotData ? (

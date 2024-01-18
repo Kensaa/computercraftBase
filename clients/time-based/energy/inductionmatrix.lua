@@ -6,10 +6,14 @@ local dataType = {
     type="induction matrix",
     unit="FE",
     keys= {
-        "energy",
-        "capacity",
-        "inputRate",
-        "outputRate"
+        {
+            "energy",
+            "capacity"
+        },
+        {
+            "inputRate",
+            "outputRate"
+        }
     }
 }
 

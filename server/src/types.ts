@@ -17,7 +17,7 @@ export const clientInfoSchema = z.object({
     type: clientTypeSchema,
     dataType: z.string(),
     dataUnit: z.string().nullable(),
-    dataKeys: z.string().array().nullable(),
+    dataKeys: z.string().array().array().nullable(),
     actions: z.string().array().nullable()
 })
 export type ClientInfo = z.infer<typeof clientInfoSchema>
@@ -53,7 +53,7 @@ export const registerPayloadSchema = z.object({
     dataType: z.object({
         type: z.string(),
         unit: z.string().optional(),
-        keys: z.string().array().optional(),
+        keys: z.string().array().array().optional(),
         actions: z.string().array().optional()
     }),
     hidden: z.boolean().optional()
