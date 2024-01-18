@@ -30,12 +30,7 @@ export function createDataMiddleware(instances: Instances) {
         next()
     }
 }
-export function errorMiddleware(
-    err: Error,
-    req: Request,
-    res: Response,
-    next: express.NextFunction
-) {
+export function errorMiddleware(err: Error, req: Request, res: Response, next: express.NextFunction) {
     if (err instanceof ZodError) {
         res.status(400).json(err.errors)
     } else {
@@ -43,23 +38,15 @@ export function errorMiddleware(
     }
 }
 
-export function authMiddleware(
-    req: Request,
-    res: Response,
-    next: express.NextFunction
-) {
+export function authMiddleware(req: Request, res: Response, next: express.NextFunction) {
     if (!req.instances) return res.status(500).send('missing instances data')
     const authHeader = req.headers.authorization
     if (authHeader) {
-        jwt.verify(
-            authHeader.split(' ')[1],
-            req.instances.authSecret,
-            (err, user) => {
-                if (err) return res.sendStatus(403)
-                req.user = user as { id: number }
-                next()
-            }
-        )
+        jwt.verify(authHeader.split(' ')[1], req.instances.authSecret, (err, user) => {
+            if (err) return res.sendStatus(403)
+            req.user = user as { id: number }
+            next()
+        })
     } else {
         res.sendStatus(401)
     }

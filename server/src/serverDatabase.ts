@@ -131,9 +131,7 @@ export class ServerDatabase {
             return `${key} = ${v}`
         })
         const conditionString = ` WHERE ${conditions.join(' AND ')}`
-        const request = `SELECT * FROM ${table}${
-            conditions.length > 0 ? conditionString : ''
-        }`
+        const request = `SELECT * FROM ${table}${conditions.length > 0 ? conditionString : ''}`
         return this.db.prepare(request).all().length
     }
 
@@ -202,16 +200,10 @@ export class ServerDatabase {
                         FROM Clients 
                         INNER JOIN CLientInfos ON Clients.infoID = ClientInfos.id 
                         WHERE Clients.name = ?`
-        const rawData = this.db.prepare(request).get(name) as Record<
-            string,
-            unknown
-        >
+        const rawData = this.db.prepare(request).get(name) as Record<string, unknown>
         if (!rawData) return undefined
 
-        return this.parseData<Client & ClientInfo>(rawData, [
-            'dataKeys',
-            'actions'
-        ])
+        return this.parseData<Client & ClientInfo>(rawData, ['dataKeys', 'actions'])
     }
 
     /**
@@ -222,13 +214,8 @@ export class ServerDatabase {
         const request = `SELECT Clients.name, Clients.hidden, ClientInfos.type, ClientInfos.dataType, ClientInfos.dataUnit, ClientInfos.dataKeys, ClientInfos.actions
         FROM Clients 
         INNER JOIN CLientInfos ON Clients.infoID = ClientInfos.id`
-        const rawData = this.db.prepare(request).all() as Record<
-            string,
-            unknown
-        >[]
-        return rawData.map(data =>
-            this.parseData<Client & ClientInfo>(data, ['dataKeys', 'actions'])
-        )
+        const rawData = this.db.prepare(request).all() as Record<string, unknown>[]
+        return rawData.map(data => this.parseData<Client & ClientInfo>(data, ['dataKeys', 'actions']))
     }
 
     /**
@@ -260,9 +247,7 @@ export class ServerDatabase {
      * @returns a list of all the groups name
      */
     getGroups() {
-        const groupNames = this.db
-            .prepare('SELECT * FROM Groups')
-            .all() as Group[]
+        const groupNames = this.db.prepare('SELECT * FROM Groups').all() as Group[]
         return groupNames
     }
 
@@ -287,16 +272,9 @@ export class ServerDatabase {
                         INNER JOIN Clients ON GroupMembers.clientName = Clients.name
                         INNER JOIN ClientInfos ON ClientInfos.id = Clients.infoID
                         WHERE GroupMembers.groupName = ?`
-        const rawData = this.db.prepare(request).all(name) as Record<
-            string,
-            unknown
-        >[]
+        const rawData = this.db.prepare(request).all(name) as Record<string, unknown>[]
         return rawData.map(data =>
-            this.parseData<(Client & ClientInfo & GroupMember)[]>(data, [
-                'dataKeys',
-                'actions',
-                'additionalData'
-            ])
+            this.parseData<(Client & ClientInfo & GroupMember)[]>(data, ['dataKeys', 'actions', 'additionalData'])
         )
     }
 
@@ -332,14 +310,9 @@ export class ServerDatabase {
      * @param clientName name of the client
      * @returns tue if operation succeeded, false otherwise
      */
-    removeClientFromGroup(
-        groupName: Group['name'],
-        clientName: Client['name']
-    ) {
-        if (!this.exists('GroupMembers', { groupName, clientName }))
-            return false
-        const request =
-            'DELETE FROM GroupMembers WHERE groupName = ? AND clientName = ?'
+    removeClientFromGroup(groupName: Group['name'], clientName: Client['name']) {
+        if (!this.exists('GroupMembers', { groupName, clientName })) return false
+        const request = 'DELETE FROM GroupMembers WHERE groupName = ? AND clientName = ?'
         this.db.prepare(request).run(groupName, clientName)
         return true
     }
@@ -351,20 +324,13 @@ export class ServerDatabase {
      * @param newOrder the new order for the client
      * @returns true if operation succeeded, false otherwise
      */
-    setClientOrder(
-        clientName: Client['name'],
-        groupName: Group['name'],
-        newOrder: number
-    ) {
+    setClientOrder(clientName: Client['name'], groupName: Group['name'], newOrder: number) {
         if (!this.exists('Groups', { name: groupName })) return false
-        if (!this.exists('GroupMembers', { groupName, clientName }))
-            return false
+        if (!this.exists('GroupMembers', { groupName, clientName })) return false
         if (!this.exists('Clients', { name: clientName })) return false
 
         const clientAtNewOrder = this.db
-            .prepare(
-                'SELECT * FROM GroupMembers WHERE GroupName = ? AND clientOrder = ?'
-            )
+            .prepare('SELECT * FROM GroupMembers WHERE GroupName = ? AND clientOrder = ?')
             .get(groupName, newOrder) as GroupMember & {
             clientName: string
             groupName: string
@@ -373,21 +339,15 @@ export class ServerDatabase {
         if (clientAtNewOrder) {
             const currentOrder = (
                 this.db
-                    .prepare(
-                        'SELECT clientOrder FROM GroupMembers WHERE groupName = ? AND clientName = ?'
-                    )
+                    .prepare('SELECT clientOrder FROM GroupMembers WHERE groupName = ? AND clientName = ?')
                     .get(groupName, clientName) as { clientOrder: number }
             ).clientOrder
             this.db
-                .prepare(
-                    'UPDATE GroupMembers SET clientOrder = ? WHERE groupName = ? and clientName = ?'
-                )
+                .prepare('UPDATE GroupMembers SET clientOrder = ? WHERE groupName = ? and clientName = ?')
                 .run(currentOrder, groupName, clientAtNewOrder.clientName)
         }
         this.db
-            .prepare(
-                'UPDATE GroupMembers SET clientOrder = ? WHERE groupName = ? and clientName = ?'
-            )
+            .prepare('UPDATE GroupMembers SET clientOrder = ? WHERE groupName = ? and clientName = ?')
             .run(newOrder, groupName, clientName)
         return true
     }
@@ -405,13 +365,10 @@ export class ServerDatabase {
     ) {
         if (!this.exists('Groups', { name: groupName })) return false
         if (!this.exists('Clients', { name: clientName })) return false
-        if (!this.exists('GroupMembers', { groupName, clientName }))
-            return false
+        if (!this.exists('GroupMembers', { groupName, clientName })) return false
 
         this.db
-            .prepare(
-                'UPDATE GroupMembers SET additionalData = ? WHERE groupName = ? AND clientName = ?'
-            )
+            .prepare('UPDATE GroupMembers SET additionalData = ? WHERE groupName = ? AND clientName = ?')
             .run(JSON.stringify(additionalData), groupName, clientName)
         return true
     }
@@ -428,9 +385,7 @@ export class ServerDatabase {
         if (client.type === 'instant grapher') {
             if (this.exists('Data', { source })) {
                 this.db
-                    .prepare(
-                        'UPDATE Data SET data = ?, time = ? WHERE source = ?'
-                    )
+                    .prepare('UPDATE Data SET data = ?, time = ? WHERE source = ?')
                     .run(JSON.stringify(data), new Date().toISOString(), source)
             } else {
                 this.insert('Data', {
@@ -466,9 +421,7 @@ export class ServerDatabase {
         const client = this.getClientByName(source)
         if (!client) return []
         const rawData = this.db
-            .prepare(
-                'SELECT data, time FROM Data WHERE source = ? ORDER BY time DESC LIMIT ?'
-            )
+            .prepare('SELECT data, time FROM Data WHERE source = ? ORDER BY time DESC LIMIT ?')
             .all(source, maxCount)
             .reverse() as Record<string, unknown>[]
         if (client.type === 'instant grapher') {
@@ -484,13 +437,9 @@ export class ServerDatabase {
      * @param password hashed password of the account
      * @returns id of the client or undefined if client already exists
      */
-    createAccount(
-        username: Account['username'],
-        password: Account['password']
-    ) {
+    createAccount(username: Account['username'], password: Account['password']) {
         if (this.accountExists(username)) return false
-        return this.insert('Accounts', { username, password })
-            .lastInsertRowid as number
+        return this.insert('Accounts', { username, password }).lastInsertRowid as number
     }
 
     /**
@@ -510,9 +459,7 @@ export class ServerDatabase {
      */
     login(username: Account['username'], password: Account['password']) {
         const res = this.db
-            .prepare(
-                'SELECT id FROM Accounts WHERE username = ? AND password = ?'
-            )
+            .prepare('SELECT id FROM Accounts WHERE username = ? AND password = ?')
             .get(username, password) as { id: number }
         if (!res) return undefined
         return res.id
@@ -524,8 +471,6 @@ export class ServerDatabase {
      * @returns the account or undefined if it doesn't exist
      */
     getAccount(id: Account['id']): Account | undefined {
-        return this.db
-            .prepare('SELECT * FROM Accounts WHERE id = ?')
-            .get(id) as Account
+        return this.db.prepare('SELECT * FROM Accounts WHERE id = ?').get(id) as Account
     }
 }

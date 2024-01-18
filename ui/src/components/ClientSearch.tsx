@@ -22,9 +22,7 @@ export default function ClientSearch({
     className = ''
 }: ClientSearchProps) {
     const [searchValue, setSearchValue] = useState('')
-    const [onlyShowConnected, setOnlyShowConnected] = useState(
-        !ShowDisconnected
-    )
+    const [onlyShowConnected, setOnlyShowConnected] = useState(!ShowDisconnected)
     const [showHidden, setShowHidden] = useState(false)
 
     const config = configStore(state => ({ ...state }))
@@ -72,9 +70,7 @@ export default function ClientSearch({
 
     const clientClicked = (client: Client) => {
         if (selectedClients.filter(e => e.name === client.name).length > 0) {
-            setSelectedClients(
-                selectedClients.filter(e => e.name !== client.name)
-            )
+            setSelectedClients(selectedClients.filter(e => e.name !== client.name))
         } else {
             if (selectedClients.length >= config.maxSelectedClient) return
             setSelectedClients([...selectedClients, client])
@@ -87,12 +83,7 @@ export default function ClientSearch({
         setSelectedClients([])
     }
     return (
-        <div
-            style={{ width: '45%' }}
-            className={
-                'h-100 d-flex flex-column align-items-center ' + className
-            }
-        >
+        <div style={{ width: '45%' }} className={'h-100 d-flex flex-column align-items-center ' + className}>
             <Form.Control
                 value={searchValue}
                 onChange={e => setSearchValue(e.target.value)}
@@ -124,9 +115,7 @@ export default function ClientSearch({
                 </thead>
                 <tbody>
                     {shownClients.map((client, index) => {
-                        const selected =
-                            selectedClients.filter(e => e.name === client.name)
-                                .length > 0
+                        const selected = selectedClients.filter(e => e.name === client.name).length > 0
                         const disabled = false
                         return (
                             <ClientRow
@@ -140,11 +129,7 @@ export default function ClientSearch({
                     })}
                 </tbody>
             </Table>
-            <Button
-                disabled={selectedClients.length === 0}
-                variant='outline-primary'
-                onClick={onBtnPressed}
-            >
+            <Button disabled={selectedClients.length === 0} variant='outline-primary' onClick={onBtnPressed}>
                 Select
             </Button>
         </div>
@@ -157,12 +142,7 @@ interface ClientRowProps {
     disabled?: boolean
     onClick: () => void
 }
-function ClientRow({
-    client,
-    selected = false,
-    disabled = false,
-    onClick
-}: ClientRowProps) {
+function ClientRow({ client, selected = false, disabled = false, onClick }: ClientRowProps) {
     const typeToString = (type: Client['type']) => {
         let typeString = ''
         switch (type) {
@@ -182,12 +162,7 @@ function ClientRow({
     }
     return (
         <tr
-            className={[
-                'user-select-none',
-                'tableRow',
-                selected ? 'selected' : '',
-                disabled ? 'disabled' : ''
-            ]
+            className={['user-select-none', 'tableRow', selected ? 'selected' : '', disabled ? 'disabled' : '']
                 .filter(e => e !== '')
                 .join(' ')}
             onClick={onClick}

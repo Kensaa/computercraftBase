@@ -13,11 +13,7 @@ interface GroupSearchProps {
     onAddButtonClicked?: () => void
 }
 
-export default function GroupSearch({
-    onValidate,
-    addButton = false,
-    onAddButtonClicked
-}: GroupSearchProps) {
+export default function GroupSearch({ onValidate, addButton = false, onAddButtonClicked }: GroupSearchProps) {
     const [searchValue, setSearchValue] = useState('')
 
     const [selectedGroup, setSelectedGroup] = useState<Group>()
@@ -67,10 +63,7 @@ export default function GroupSearch({
     }
 
     return (
-        <div
-            style={{ width: '45%' }}
-            className='h-100 d-flex flex-column align-items-center'
-        >
+        <div style={{ width: '45%' }} className='h-100 d-flex flex-column align-items-center'>
             <div className='d-flex w-100'>
                 <Form.Control
                     value={searchValue}
@@ -79,11 +72,7 @@ export default function GroupSearch({
                     placeholder='Search for a group'
                 />
                 {addButton && (
-                    <Button
-                        variant='outline-primary'
-                        className='ms-1'
-                        onClick={onAddButtonClicked}
-                    >
+                    <Button variant='outline-primary' className='ms-1' onClick={onAddButtonClicked}>
                         <Plus size={24} className='w-100 me-1' />
                         Create Group
                     </Button>
@@ -112,11 +101,7 @@ export default function GroupSearch({
                     })}
                 </tbody>
             </Table>
-            <Button
-                disabled={!selectedGroup}
-                variant='outline-primary'
-                onClick={onBtnPressed}
-            >
+            <Button disabled={!selectedGroup} variant='outline-primary' onClick={onBtnPressed}>
                 Select
             </Button>
         </div>
@@ -130,20 +115,10 @@ interface GroupRowProps {
     disabled?: boolean
 }
 
-function GroupRow({
-    group,
-    onClick,
-    selected = false,
-    disabled = false
-}: GroupRowProps) {
+function GroupRow({ group, onClick, selected = false, disabled = false }: GroupRowProps) {
     return (
         <tr
-            className={[
-                'user-select-none',
-                'tableRow',
-                selected ? 'selected' : '',
-                disabled ? 'disabled' : ''
-            ]
+            className={['user-select-none', 'tableRow', selected ? 'selected' : '', disabled ? 'disabled' : '']
                 .filter(e => e !== '')
                 .join(' ')}
             onClick={onClick}

@@ -8,14 +8,10 @@ export async function queryFetch(
         const value = queries[key]
         if (Array.isArray(value)) {
             for (const e of value) {
-                stringifiedQueries.push(
-                    `${encodeURIComponent(key)}[]=${encodeURIComponent(e)}`
-                )
+                stringifiedQueries.push(`${encodeURIComponent(key)}[]=${encodeURIComponent(e)}`)
             }
         } else {
-            stringifiedQueries.push(
-                `${encodeURIComponent(key)}=${encodeURIComponent(value)}`
-            )
+            stringifiedQueries.push(`${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
         }
     }
     let queryString = stringifiedQueries.join('&')

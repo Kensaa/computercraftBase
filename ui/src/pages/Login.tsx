@@ -61,11 +61,7 @@ export default function Login() {
         <div className='w-100 h-100 d-flex flex-column'>
             <AppNavbar />
             {error && (
-                <Alert
-                    dismissible
-                    variant='danger'
-                    onClose={() => setError('')}
-                >
+                <Alert dismissible variant='danger' onClose={() => setError('')}>
                     {error}
                 </Alert>
             )}
@@ -82,13 +78,9 @@ export default function Login() {
                         placeholder='Username'
                         required
                         value={username}
-                        onChange={({ currentTarget }) =>
-                            setUsername(currentTarget.value)
-                        }
+                        onChange={({ currentTarget }) => setUsername(currentTarget.value)}
                     />
-                    <Form.Control.Feedback type='invalid'>
-                        Invalid username
-                    </Form.Control.Feedback>
+                    <Form.Control.Feedback type='invalid'>Invalid username</Form.Control.Feedback>
                 </Form.Group>
                 <Form.Group controlId='password' className='mb-3'>
                     <Form.Label>password</Form.Label>
@@ -97,13 +89,9 @@ export default function Login() {
                         placeholder='Password'
                         required
                         value={password}
-                        onChange={({ currentTarget }) =>
-                            setPassword(currentTarget.value)
-                        }
+                        onChange={({ currentTarget }) => setPassword(currentTarget.value)}
                     />
-                    <Form.Control.Feedback type='invalid'>
-                        Invalid password
-                    </Form.Control.Feedback>
+                    <Form.Control.Feedback type='invalid'>Invalid password</Form.Control.Feedback>
                 </Form.Group>
                 <Button variant='primary' type='submit'>
                     Connection

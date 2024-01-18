@@ -40,9 +40,7 @@ export default function ShowGroup({ input }: ShowProps) {
                 throw new Error('error while fetching clients infos')
             })
             .then(members => members as GroupMember[])
-            .then(members =>
-                members.sort((a, b) => a.clientOrder - b.clientOrder)
-            )
+            .then(members => members.sort((a, b) => a.clientOrder - b.clientOrder))
             .then(members => setClients(members))
     }, [input])
 
@@ -71,13 +69,7 @@ export default function ShowGroup({ input }: ShowProps) {
                     {clients.map((client, index) => {
                         const { type } = client
                         if (type === 'time-based grapher') {
-                            return (
-                                <Plot
-                                    context={dataContext}
-                                    key={index}
-                                    client={client}
-                                />
-                            )
+                            return <Plot context={dataContext} key={index} client={client} />
                         } else if (type === 'instant grapher') {
                             return <div className=''></div>
                         } else if (type === 'actuator') {

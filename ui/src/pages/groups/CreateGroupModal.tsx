@@ -10,10 +10,7 @@ interface CreateGroupModalProps {
     hide: () => void
 }
 
-export default function CreateGroupModal({
-    show,
-    hide
-}: CreateGroupModalProps) {
+export default function CreateGroupModal({ show, hide }: CreateGroupModalProps) {
     const [name, setName] = useState('')
     const [type, setType] = useState(groupTypes[0])
     const [error, setError] = useState('')
@@ -72,11 +69,7 @@ export default function CreateGroupModal({
                     value={name}
                     onChange={e => setName(e.target.value)}
                 ></Form.Control>
-                <Form.Select
-                    value={type}
-                    onChange={e => setType(e.target.value)}
-                    className='mt-2'
-                >
+                <Form.Select value={type} onChange={e => setType(e.target.value)} className='mt-2'>
                     {groupTypes.map((type, index) => (
                         <option key={index} value={type}>
                             {type}

@@ -13,9 +13,7 @@ export default function Home() {
     const [, setLocation] = useLocation()
 
     const onClientValidate = (selectedClients: Client[]) => {
-        const paramString = selectedClients
-            .map(e => encodeURI(e.name))
-            .join(',')
+        const paramString = selectedClients.map(e => encodeURI(e.name)).join(',')
         setLocation(`/show/clients/${paramString}`)
     }
 

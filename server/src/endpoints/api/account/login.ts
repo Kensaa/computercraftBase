@@ -13,17 +13,13 @@ const responseSchema = z.object({
     token: z.string()
 })
 
-export default function handler(
-    req: Request<z.infer<typeof querySchema>, z.infer<typeof bodySchema>>,
-    res: Response
-) {
+export default function handler(req: Request<z.infer<typeof querySchema>, z.infer<typeof bodySchema>>, res: Response) {
     if (!req.instances) return res.status(500).send('missing instances data')
     const { database, authSecret } = req.instances
 
     const body = bodySchema.parse(req.body)
 
-    if (!database.accountExists(body.username))
-        return res.status(404).send('user not found')
+    if (!database.accountExists(body.username)) return res.status(404).send('user not found')
     const id = database.login(body.username, body.password)
     if (!id) return res.status(401).send('wrong password')
 

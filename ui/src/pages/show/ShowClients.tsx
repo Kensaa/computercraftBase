@@ -69,13 +69,7 @@ export default function ShowClients({ input }: ShowProps) {
                     {clients.map((client, index) => {
                         const { type } = client
                         if (type === 'time-based grapher') {
-                            return (
-                                <Plot
-                                    context={dataContext}
-                                    key={index}
-                                    client={client}
-                                />
-                            )
+                            return <Plot context={dataContext} key={index} client={client} />
                         } else if (type === 'instant grapher') {
                             return <div className=''></div>
                         } else if (type === 'actuator') {

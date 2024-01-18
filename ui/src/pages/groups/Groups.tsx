@@ -19,15 +19,9 @@ export default function Groups() {
                     addButton
                     onAddButtonClicked={() => setCreateModal(true)}
                 />
-                <CreateGroupModal
-                    show={createModal}
-                    hide={() => setCreateModal(false)}
-                />
+                <CreateGroupModal show={createModal} hide={() => setCreateModal(false)} />
 
-                <EditGroupModal
-                    group={editedGroup}
-                    hide={() => setEditedGroup(undefined)}
-                />
+                <EditGroupModal group={editedGroup} hide={() => setEditedGroup(undefined)} />
             </div>
         </div>
     )

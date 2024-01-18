@@ -5,11 +5,7 @@ import * as cors from 'cors'
 import * as fs from 'fs'
 import * as path from 'path'
 import { ServerDatabase } from './serverDatabase'
-import {
-    createDataMiddleware,
-    errorMiddleware,
-    authMiddleware
-} from './endpoints/middlewares'
+import { createDataMiddleware, errorMiddleware, authMiddleware } from './endpoints/middlewares'
 import * as http from 'http'
 
 import clientFetch from './endpoints/api/client/fetch'
@@ -29,11 +25,7 @@ import groupRemoveClient from './endpoints/api/group/removeClient'
 import groupSetOrders from './endpoints/api/group/setOrders'
 import groupSetAdditonalData from './endpoints/api/group/setAdditionalData'
 
-import {
-    dataPayloadSchema,
-    registerPayloadSchema,
-    wsMessageSchema
-} from './types'
+import { dataPayloadSchema, registerPayloadSchema, wsMessageSchema } from './types'
 import { randomBytes, createHash } from 'crypto'
 import 'dotenv/config'
 
@@ -48,9 +40,7 @@ const DATABASE_PATH = process.env.DATABASE_PATH || 'database.db'
     const httpServer = http.createServer(expressApp)
     const wsServer = new ws.Server({ server: httpServer })
 
-    httpServer.listen(WEB_SERVER_PORT, () =>
-        console.log(`server started on port ${WEB_SERVER_PORT}`)
-    )
+    httpServer.listen(WEB_SERVER_PORT, () => console.log(`server started on port ${WEB_SERVER_PORT}`))
 
     const database = new ServerDatabase(DATABASE_PATH)
     const connectedClients: { name: string; ws: WebSocket }[] = []
@@ -65,9 +55,7 @@ const DATABASE_PATH = process.env.DATABASE_PATH || 'database.db'
         database.createAccount(username, hashedPassword)
     } else if (database.exists('Accounts', { username: 'admin' })) {
         console.log('other accounts found, deleting default one')
-        database.db
-            .prepare('DELETE FROM Accounts WHERE username = ? AND password = ?')
-            .run(username, hashedPassword)
+        database.db.prepare('DELETE FROM Accounts WHERE username = ? AND password = ?').run(username, hashedPassword)
     }
 
     wsServer.on('connection', ws => {
@@ -76,15 +64,10 @@ const DATABASE_PATH = process.env.DATABASE_PATH || 'database.db'
             if (message.action === 'register') {
                 const payload = registerPayloadSchema.parse(message.payload)
                 //Check if client is already connected (it can be the websocket that didn't close properly)
-                const clientSession = connectedClients.find(
-                    e => e.name === payload.name
-                )
+                const clientSession = connectedClients.find(e => e.name === payload.name)
                 if (clientSession) {
                     clientSession.ws.close()
-                    connectedClients.splice(
-                        connectedClients.indexOf(clientSession),
-                        1
-                    )
+                    connectedClients.splice(connectedClients.indexOf(clientSession), 1)
                 }
                 database.createClient(
                     payload.name,
@@ -96,9 +79,7 @@ const DATABASE_PATH = process.env.DATABASE_PATH || 'database.db'
                     payload.dataType.actions
                 )
                 connectedClients.push({ name: payload.name, ws })
-                console.log(
-                    `client "${payload.name}" connected (type : ${payload.clientType})`
-                )
+                console.log(`client "${payload.name}" connected (type : ${payload.clientType})`)
             } else if (message.action === 'data') {
                 const payload = dataPayloadSchema.parse(message.payload)
                 const clientSession = connectedClients.find(e => e.ws === ws)
@@ -116,9 +97,7 @@ const DATABASE_PATH = process.env.DATABASE_PATH || 'database.db'
             if (!clientSession) return
             const client = database.getClientByName(clientSession.name)
             if (!client) return
-            console.log(
-                `unregistering client named "${client.name}" (${client.type})`
-            )
+            console.log(`unregistering client named "${client.name}" (${client.type})`)
             connectedClients.splice(connectedClients.indexOf(clientSession), 1)
         })
     })
@@ -144,17 +123,9 @@ const DATABASE_PATH = process.env.DATABASE_PATH || 'database.db'
     expressApp.post('/api/group/create', authMiddleware, groupCreate)
     expressApp.post('/api/group/remove', authMiddleware, groupRemove)
     expressApp.post('/api/group/addClient', authMiddleware, groupAddClient)
-    expressApp.post(
-        '/api/group/removeClient',
-        authMiddleware,
-        groupRemoveClient
-    )
+    expressApp.post('/api/group/removeClient', authMiddleware, groupRemoveClient)
     expressApp.post('/api/group/setOrders', authMiddleware, groupSetOrders)
-    expressApp.post(
-        '/api/group/setAdditionalData',
-        authMiddleware,
-        groupSetAdditonalData
-    )
+    expressApp.post('/api/group/setAdditionalData', authMiddleware, groupSetAdditonalData)
 
     expressApp.use(errorMiddleware)
 

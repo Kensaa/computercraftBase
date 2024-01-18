@@ -37,10 +37,7 @@ export default function Actuator({ client }: ActuatorProps) {
             className='m-2 d-flex flex-column align-items-center border'
         >
             <h3>{client.name}</h3>
-            <div
-                className='overflow-auto'
-                style={{ maxHeight: '70%', flexGrow: 1 }}
-            >
+            <div className='overflow-auto' style={{ maxHeight: '70%', flexGrow: 1 }}>
                 <ListGroup className=''>
                     {client.actions?.map((action, actionI) => (
                         <ListGroup.Item
@@ -54,11 +51,7 @@ export default function Actuator({ client }: ActuatorProps) {
                     ))}
                 </ListGroup>
             </div>
-            <Button
-                disabled={selected === undefined}
-                style={{ marginTop: '0.5rem' }}
-                onClick={onSend}
-            >
+            <Button disabled={selected === undefined} style={{ marginTop: '0.5rem' }} onClick={onSend}>
                 Send
             </Button>
         </div>

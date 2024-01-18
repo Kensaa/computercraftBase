@@ -6,12 +6,7 @@ import dataStore from '../../stores/data'
 import { Client, Group, GroupMember } from '../../types'
 import { queryFetch } from '../../utils'
 import ClientSearch from '../../components/ClientSearch'
-import {
-    DragDropContext,
-    Draggable,
-    Droppable,
-    DropResult
-} from 'react-beautiful-dnd'
+import { DragDropContext, Draggable, Droppable, DropResult } from 'react-beautiful-dnd'
 
 interface EditGroupModalProps {
     group?: Group
@@ -58,37 +53,21 @@ export default function EditGroupModal({ group, hide }: EditGroupModalProps) {
     }
 
     return (
-        <Modal
-            show={group !== undefined}
-            dialogClassName='large-modal'
-            onHide={hide}
-        >
+        <Modal show={group !== undefined} dialogClassName='large-modal' onHide={hide}>
             <Modal.Header closeButton>
                 <Modal.Title>Editing group "{group.name}"</Modal.Title>
-                <Button
-                    onClick={deleteGroup}
-                    variant='outline-danger'
-                    style={{ marginLeft: 'auto' }}
-                >
+                <Button onClick={deleteGroup} variant='outline-danger' style={{ marginLeft: 'auto' }}>
                     Delete group
                 </Button>
             </Modal.Header>
             <Modal.Body>
                 <Tabs fill>
                     <Tab eventKey='edit' title='add/remove clients'>
-                        <EditTab
-                            groupMembers={groupMembers}
-                            group={group}
-                            hide={hide}
-                        />
+                        <EditTab groupMembers={groupMembers} group={group} hide={hide} />
                     </Tab>
                     <Tab eventKey='order' title='edit order'>
                         <div className='d-flex justify-content-center'>
-                            <OrderTab
-                                groupMembers={groupMembers}
-                                group={group}
-                                hide={hide}
-                            />
+                            <OrderTab groupMembers={groupMembers} group={group} hide={hide} />
                         </div>
                     </Tab>
                 </Tabs>
@@ -154,11 +133,7 @@ function EditTab({ groupMembers, group, hide }: TabsProps) {
     }
     return (
         <div className='d-flex justify-content-center'>
-            <ClientSearch
-                onValidate={handleMemberChange}
-                preSelected={groupMembers}
-                className='mt-2'
-            />
+            <ClientSearch onValidate={handleMemberChange} preSelected={groupMembers} className='mt-2' />
         </div>
     )
 }
@@ -213,11 +188,7 @@ function OrderTab({ groupMembers: startGroupMember, group, hide }: TabsProps) {
                             {...provided.droppableProps}
                         >
                             {groupMembers.map((groupMember, index) => (
-                                <Draggable
-                                    key={groupMember.name}
-                                    index={index}
-                                    draggableId={groupMember.name}
-                                >
+                                <Draggable key={groupMember.name} index={index} draggableId={groupMember.name}>
                                     {provided => (
                                         <div
                                             ref={provided.innerRef}

@@ -1,7 +1,6 @@
 import { create } from 'zustand'
 
-const address =
-    import.meta.env.MODE == 'production' ? '' : 'http://localhost:3695'
+const address = import.meta.env.MODE == 'production' ? '' : 'http://localhost:3695'
 const maxSelectedClient = 9999
 const fetchOptions = {
     method: 'GET',

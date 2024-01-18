@@ -1,10 +1,4 @@
-import React, {
-    createContext,
-    useCallback,
-    useContext,
-    useEffect,
-    useState
-} from 'react'
+import React, { createContext, useCallback, useContext, useEffect, useState } from 'react'
 import { queryFetch } from '../../utils'
 import { Data, DataContext, GroupMember } from '../../types'
 import configStore from '../../stores/config'
@@ -60,12 +54,8 @@ export default function ShowCreate({ input }: ShowProps) {
                 throw new Error('error while fetching clients infos')
             })
             .then(members => members as GroupMember[])
-            .then(members =>
-                members.sort((a, b) => a.clientOrder - b.clientOrder)
-            )
-            .then(members =>
-                members.filter(e => e.dataType.toLowerCase().includes('create'))
-            )
+            .then(members => members.sort((a, b) => a.clientOrder - b.clientOrder))
+            .then(members => members.filter(e => e.dataType.toLowerCase().includes('create')))
             .then(members => setClients(members))
     }, [input, config.address])
 
@@ -108,16 +98,8 @@ export default function ShowCreate({ input }: ShowProps) {
     const [nodes, setNodes] = useState<Node[]>([])
     const [edges, setEdges] = useState<Edge[]>([])
 
-    const onNodesChange = useCallback(
-        (changes: NodeChange[]) =>
-            setNodes(nds => applyNodeChanges(changes, nds)),
-        []
-    )
-    const onEdgesChange = useCallback(
-        (changes: EdgeChange[]) =>
-            setEdges(eds => applyEdgeChanges(changes, eds)),
-        []
-    )
+    const onNodesChange = useCallback((changes: NodeChange[]) => setNodes(nds => applyNodeChanges(changes, nds)), [])
+    const onEdgesChange = useCallback((changes: EdgeChange[]) => setEdges(eds => applyEdgeChanges(changes, eds)), [])
 
     return (
         <dataContext.Provider value={{ clients, data }}>
@@ -150,8 +132,7 @@ interface NodeProps {
 }
 
 function MeterNode({ data: { client }, isConnectable }: NodeProps) {
-    if (client.dataType !== 'create meter unit')
-        return <div>INVALID CLIENT</div>
+    if (client.dataType !== 'create meter unit') return <div>INVALID CLIENT</div>
     const clientData = useContext(dataContext).data[client.name]
 
     if (!clientData || clientData.length === 0) return <div>LOADING</div>
@@ -165,21 +146,9 @@ function MeterNode({ data: { client }, isConnectable }: NodeProps) {
                 {stress}su / {capacity}su
             </h5>
             <ToggleSwitch client={client} />
-            <ProgressBar
-                now={stress}
-                max={capacity}
-                label={`${((stress * 100) / capacity).toFixed(1)}%`}
-            />
-            <Handle
-                type='target'
-                position={Position.Top}
-                isConnectable={isConnectable}
-            />
-            <Handle
-                type='source'
-                position={Position.Bottom}
-                isConnectable={isConnectable}
-            />
+            <ProgressBar now={stress} max={capacity} label={`${((stress * 100) / capacity).toFixed(1)}%`} />
+            <Handle type='target' position={Position.Top} isConnectable={isConnectable} />
+            <Handle type='source' position={Position.Bottom} isConnectable={isConnectable} />
         </div>
     )
 }
@@ -190,16 +159,8 @@ function SwitchNode({ data: { client }, isConnectable }: NodeProps) {
         <div>
             <h3 style={{ borderBottom: '1px solid #dee2e6' }}>{client.name}</h3>
             <ToggleSwitch client={client} />
-            <Handle
-                type='target'
-                position={Position.Top}
-                isConnectable={isConnectable}
-            />
-            <Handle
-                type='source'
-                position={Position.Bottom}
-                isConnectable={isConnectable}
-            />
+            <Handle type='target' position={Position.Top} isConnectable={isConnectable} />
+            <Handle type='source' position={Position.Bottom} isConnectable={isConnectable} />
         </div>
     )
 }
@@ -228,18 +189,10 @@ function ToggleSwitch({ client, defaultOn = true }: ToggleSwitchProps) {
 
     return (
         <div className='d-flex justify-content-center mt-2'>
-            <Button
-                onClick={() => action('on')}
-                variant={isOn ? 'success' : 'outline-success'}
-                className='m-1'
-            >
+            <Button onClick={() => action('on')} variant={isOn ? 'success' : 'outline-success'} className='m-1'>
                 ON
             </Button>
-            <Button
-                onClick={() => action('off')}
-                variant={isOn ? 'outline-danger' : 'danger'}
-                className='m-1'
-            >
+            <Button onClick={() => action('off')} variant={isOn ? 'outline-danger' : 'danger'} className='m-1'>
                 OFF
             </Button>
         </div>

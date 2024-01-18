@@ -16,11 +16,7 @@ interface LoginWallProps {
     reversed?: boolean
     redirect?: string
 }
-const LoginWall = ({
-    children,
-    reversed = false,
-    redirect = '/login'
-}: LoginWallProps) => {
+const LoginWall = ({ children, reversed = false, redirect = '/login' }: LoginWallProps) => {
     let autorized = authStore(state => state.isConnected)
     if (reversed) autorized = !autorized
     return autorized ? children : <Redirect to={redirect} />

@@ -6,11 +6,7 @@ export const clientSchema = z.object({
 })
 export type Client = z.infer<typeof clientSchema>
 /////////////////////////////////////////////////////////////////////////////////
-export const clientTypeSchema = z.enum([
-    'time-based grapher',
-    'instant grapher',
-    'actuator'
-])
+export const clientTypeSchema = z.enum(['time-based grapher', 'instant grapher', 'actuator'])
 export type ClientType = z.infer<typeof clientTypeSchema>
 /////////////////////////////////////////////////////////////////////////////////
 export const clientInfoSchema = z.object({
