@@ -134,7 +134,8 @@ function NumbersElements({ data, keys, unit }: NumbersElementsProps) {
                         </h5>
                         <span style={{ fontSize: '15px' }}>
                             {variation >= 0 ? '+' : '-'}
-                            {Math.abs(variation)}
+                            {applySuffix(Math.abs(variation))}
+                            {unit}
                         </span>
                     </div>
                 )
