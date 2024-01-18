@@ -2,7 +2,7 @@ import * as Database from 'better-sqlite3'
 import * as fs from 'fs'
 import { Client, ClientInfo, Account, Data, Group, GroupMember } from './types'
 
-const MAX_COUNT = 10000
+const MAX_COUNT = 100000
 
 export class ServerDatabase {
     filepath: string
