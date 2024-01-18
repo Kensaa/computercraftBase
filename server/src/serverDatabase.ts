@@ -173,21 +173,37 @@ export class ServerDatabase {
         dataKeys?: ClientInfo['dataKeys'],
         actions?: ClientInfo['actions']
     ) {
-        if (this.exists('Clients', { name })) return undefined
-        const clientInfoID = this.insert('ClientInfos', {
-            type,
-            dataType,
-            dataUnit,
-            dataKeys: JSON.stringify(dataKeys),
-            actions: JSON.stringify(actions)
-        }).lastInsertRowid
-        const clientID = this.insert('Clients', {
-            name,
-            hidden,
-            infoID: clientInfoID
-        }).lastInsertRowid
+        if (this.exists('Clients', { name })) {
+            // If client already exists, update it
+            const { infoID } = this.db.prepare('SELECT infoID FROM Clients WHERE name = ?').get(name) as {
+                infoID: number
+            }
+            const request = `UPDATE ClientInfos
+                             SET type=?,
+                                 dataType=?,
+                                 dataUnit=?,
+                                 dataKeys=?,
+                                 actions=?
+                             WHERE id = ?`
+            this.db
+                .prepare(request)
+                .run(type, dataType, dataUnit, JSON.stringify(dataKeys), JSON.stringify(actions), infoID)
+        } else {
+            const clientInfoID = this.insert('ClientInfos', {
+                type,
+                dataType,
+                dataUnit,
+                dataKeys: JSON.stringify(dataKeys),
+                actions: JSON.stringify(actions)
+            }).lastInsertRowid
+            const clientID = this.insert('Clients', {
+                name,
+                hidden,
+                infoID: clientInfoID
+            }).lastInsertRowid
 
-        return clientID as number
+            return clientID as number
+        }
     }
 
     /**
