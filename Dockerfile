@@ -13,7 +13,7 @@ RUN yarn
 COPY ./ui/ .
 RUN yarn build
 
-FROM gcr.io/distroless/nodejs20-debian11
+FROM gcr.io/distroless/nodejs20-debian12
 COPY --from=build_env /app/server /app/server
 COPY --from=build_env /app/ui/dist /app/server/public
 WORKDIR /app/server
