@@ -91,9 +91,10 @@ export default function Plot({ client, context }: PlotProps) {
                         <Line data={plotData} options={plotOptions} />
                     </div>
 
-                    <VariationElement
+                    <NumbersElements
                         data={clientData.slice(clientData.length - 2, clientData.length)}
                         keys={client.dataKeys.flat()}
+                        unit={client.dataUnit}
                     />
                 </div>
             ) : (
@@ -105,12 +106,13 @@ export default function Plot({ client, context }: PlotProps) {
     )
 }
 
-interface VariationElement {
+interface NumbersElementsProps {
     data: Datapoint[]
     keys: string[]
+    unit?: string
 }
 
-function VariationElement({ data, keys }: VariationElement) {
+function NumbersElements({ data, keys, unit }: NumbersElementsProps) {
     console.log(data)
     if (data.length < 2) return <div>Not Enough Data</div>
     const previous = data[0].data
@@ -119,21 +121,34 @@ function VariationElement({ data, keys }: VariationElement) {
         <div className='d-flex justify-content-center' style={{ flexGrow: 1 }}>
             {keys.map(key => {
                 const variation = current[key] - previous[key]
+                let color = 'black'
+                if (variation > 0) color = 'green'
+                if (variation < 0) color = 'red'
 
                 return (
-                    <div
-                        key={key}
-                        className='d-flex flex-column m-2'
-                        style={{ color: variation >= 0 ? 'green' : 'red' }}
-                    >
+                    <div key={key} className='d-flex flex-column align-items-center m-2' style={{ color }}>
                         <h5>{key}</h5>
-                        <h6>
+                        <h5>
+                            {applySuffix(current[key])}
+                            {unit}
+                        </h5>
+                        <span style={{ fontSize: '15px' }}>
                             {variation >= 0 ? '+' : '-'}
                             {Math.abs(variation)}
-                        </h6>
+                        </span>
                     </div>
                 )
             })}
         </div>
     )
+}
+
+function applySuffix(value: number) {
+    const suffixes = ['', 'k', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y']
+    let suffixIndex = 0
+    while (value > 1000) {
+        value /= 1000
+        suffixIndex++
+    }
+    return `${value.toFixed(2)}${suffixes[suffixIndex]}`
 }
