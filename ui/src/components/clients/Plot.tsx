@@ -69,7 +69,7 @@ export default function Plot({ client, context }: PlotProps) {
                     drawOnChartArea: false
                 },
                 ticks: {
-                    callback: (value: number) => ' ' + applySuffix(value) + client.dataUnit
+                    callback: (value: number) => applySuffix(value) + client.dataUnit
                 }
             }
         }
