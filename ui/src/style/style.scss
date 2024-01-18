@@ -24,6 +24,9 @@ body,
         color: rgba(0, 0, 0, 0.6);
         pointer-events: none;
     }
+    & td {
+        background-color: inherit;
+    }
 }
 
 .large-modal {
