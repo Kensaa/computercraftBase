@@ -67,7 +67,7 @@ export default function ShowCreate({ input }: ShowProps) {
                 members.filter(e => e.dataType.toLowerCase().includes('create'))
             )
             .then(members => setClients(members))
-    }, [input])
+    }, [input, config.address])
 
     useInterval(() => {
         if (clients.length === 0) return

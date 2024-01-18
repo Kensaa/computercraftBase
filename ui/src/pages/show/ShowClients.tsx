@@ -42,7 +42,7 @@ export default function ShowClients({ input }: ShowProps) {
             .sort((a, b) => types.indexOf(a.type) - types.indexOf(b.type))
 
         setClients(list)
-    }, [input])
+    }, [input, clientsList])
 
     useInterval(() => {
         if (clients.length === 0) return
