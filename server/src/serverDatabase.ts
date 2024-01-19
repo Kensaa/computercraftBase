@@ -420,7 +420,7 @@ export class ServerDatabase {
             if (count > MAX_COUNT) {
                 this.db
                     .prepare(
-                        'DELETE FROM TimeData WHERE id IN (SELECT id FROM TimeData WHERE source = ? ORDER BY id ASC LIMIT ?)'
+                        'DELETE FROM Data WHERE id IN (SELECT id FROM Data WHERE source = ? ORDER BY id ASC LIMIT ?)'
                     )
                     .run(source, count - MAX_COUNT)
             }
