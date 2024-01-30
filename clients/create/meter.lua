@@ -6,9 +6,11 @@ local dataType = {
     type="create meter unit",
     unit="",
     keys= {
-        "speed",
-        "stress",
-        "capacity"
+        {
+            "speed",
+            "stress",
+            "capacity"
+        }
     },
     actions= {
         "on",

@@ -6,8 +6,10 @@ local dataType = {
     type="fluid storage",
     unit="mb",
     keys= {
-        "storage",
-        "capacity"
+        {
+             "storage",
+             "capacity"
+        }
     }
 }
 

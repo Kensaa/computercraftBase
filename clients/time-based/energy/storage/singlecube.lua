@@ -6,8 +6,12 @@ local dataType = {
     type="energy storage",
     unit="FE",
     keys= {
-        "energy",
-        "capacity"
+        {
+            "energy",
+        },
+        {
+            "capacity"
+        }
     }
 }
 

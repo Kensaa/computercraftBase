@@ -6,9 +6,11 @@ local dataType = {
     type="chest",
     unit="",
     keys= {
-        "storage",
-        "capacity",
-        "items"
+        {
+            "storage",
+            "capacity",
+            "items"
+        }
     }
 }
 

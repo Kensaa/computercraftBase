@@ -6,7 +6,9 @@ local dataType = {
     type="energy rate",
     unit="FE",
     keys= {
-        "rate"
+        {
+            "rate"
+        }
     }
 }
 
