@@ -45,7 +45,7 @@ export default function Plot({ client, context }: PlotProps) {
                 .map((axis, axisIndex) =>
                     axis.map((key, keyIndex) => ({
                         label: key,
-                        data: clientData.map(e => e.data[key]),
+                        data: clientData.map(e => e.data[key] || 0),
                         backgroundColor: colors[axisIndex % colors.length][keyIndex % colors[keyIndex].length],
                         borderColor: colors[axisIndex % colors.length][keyIndex % colors[keyIndex].length],
                         color: colors[axisIndex % colors.length][keyIndex % colors[keyIndex].length],
@@ -123,7 +123,7 @@ function NumbersElements({ data, keys, unit }: NumbersElementsProps) {
     return (
         <div className='d-flex justify-content-center' style={{ flexGrow: 1 }}>
             {keys.map(key => {
-                const variation = current[key] - previous[key]
+                const variation = (current[key] || 0) - (previous[key] || 0)
                 let color = 'black'
                 if (variation > 0) color = 'green'
                 if (variation < 0) color = 'red'
@@ -132,7 +132,7 @@ function NumbersElements({ data, keys, unit }: NumbersElementsProps) {
                     <div key={key} className='d-flex flex-column align-items-center m-2' style={{ color }}>
                         <h5>{key}</h5>
                         <h5>
-                            {applySuffix(current[key])}
+                            {applySuffix(current[key] || 0)}
                             {unit}
                         </h5>
                         <span style={{ fontSize: '15px' }}>
